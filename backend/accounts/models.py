@@ -15,7 +15,7 @@ class User(AbstractUser):
         upload_to=UploadPath(folder="pictures", sub_path="avatars"),
         blank=True,
         null=True,
-        default="img/default.png",
+        default="img/default-avatar.jpg",
     )
     phone_number = PhoneNumberField(blank=True, null=True, verbose_name=_("Phone Number"))
     last_ip = models.GenericIPAddressField(verbose_name=_("Last IP Address"), null=True, blank=True)
