@@ -19,6 +19,8 @@ class User(AbstractUser):
     )
     phone_number = PhoneNumberField(blank=True, null=True, verbose_name=_("Phone Number"))
     last_ip = models.GenericIPAddressField(verbose_name=_("Last IP Address"), null=True, blank=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
     def __str__(self):
         return self.username
