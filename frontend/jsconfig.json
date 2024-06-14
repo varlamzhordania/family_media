@@ -1,0 +1,45 @@
+{
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "cypress/**/*.js"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "es2020",
+      "DOM"
+    ],
+    "moduleResolution": "node",
+    "target": "es2020",
+    "checkJs": true,
+    "jsx": "react",
+    "types": [
+      "cypress",
+      "@testing-library/cypress"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": [
+        "./src/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@pages/*": [
+        "./src/pages/*"
+      ],
+      "@layout/*": [
+        "./src/layout/*"
+      ],
+      "@public": [
+        "./public/*"
+      ],
+      "@lib": [
+        "./src/lib/*"
+      ]
+    }
+  }
+}

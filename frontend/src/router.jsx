@@ -1,13 +1,13 @@
 import {createBrowserRouter} from "react-router-dom";
-import Login from "./pages/Login.jsx";
-import ErrorPage from "./pages/Error.jsx";
-import RootLayout from "./layout/RootLayout.jsx";
-import RootPage from "./pages/Root.jsx";
+import RootLayout from "@layout/RootLayout.jsx";
+import Login from "@pages/Login.jsx";
+import ErrorPage from "@pages/Error.jsx";
+import RootPage from "@pages/Root.jsx";
 
 export const router = createBrowserRouter([
     {
         path: "",
-        element: <RootLayout/>,
+        element: null,
         errorElement: <RootLayout><ErrorPage/></RootLayout>,
         children: [
             {
@@ -16,7 +16,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/auth/login/",
-                element: <Login/>,
+                element: <RootLayout><Login/></RootLayout>,
             },
         ]
     },

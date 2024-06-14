@@ -51,7 +51,7 @@ class Family(BaseModel):
         ordering = ["name"]
 
     def __str__(self):
-        return f"{self.id} - {self.name}"
+        return self.name
 
     def set_new_invite_code(self):
         self.invite_code = get_random_string(10, "QWERTYUIOPASDFGHJKLZXCVBNM123456789")

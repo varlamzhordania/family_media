@@ -13,8 +13,8 @@ import {
 import {Facebook, Google, Visibility, VisibilityOff} from "@mui/icons-material";
 import {Link as RouterLink, useNavigate} from "react-router-dom";
 import {useRef, useState} from "react";
-import {loginService} from "../services/authService.js";
-import {getToken, removeToken} from "../features/utils/token.js";
+import {getToken, removeToken} from "@lib/utils/token.js";
+import {loginService} from "@lib/services/authService.js";
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false)
@@ -53,6 +53,7 @@ const Login = () => {
         setLoading(true);
         try {
             await loginService(prepData);
+            navigate("/")
         } catch (error) {
             console.error("Login failed:", error);
             setErrorMessages(prevState => ({...prevState, general: error.message}));
@@ -84,7 +85,7 @@ const Login = () => {
                         <Box sx={boxStyles}>
                             <Button
                                 variant={"contained"}
-                                onClick={() => navigate("/dashboard")}
+                                onClick={() => navigate("/")}
                                 fullWidth
                             >
                                 Go to Dashboard
@@ -104,7 +105,7 @@ const Login = () => {
 
     return (
         <Container className={"center-container"} maxWidth={"sm"}>
-            <Card sx={{boxShadow: "unset"}}>
+            <Card sx={{boxShadow: 1}}>
                 <CardHeader
                     title={"Sign In"}
                     titleTypographyProps={{fontWeight: "bold", fontSize: 42}}
@@ -114,7 +115,7 @@ const Login = () => {
                     <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
                         <TextField type={"email"} id={"id_email"} name={"email"} variant={"outlined"} label={"Email"}
                                    placeholder={"please enter your email address"}
-                                   size={"small"} fullWidth inputRef={emailRef} error={errors.email}
+                                   fullWidth inputRef={emailRef} error={errors.email}
                                    helperText={errorMessages.email}
                                    required
                         />
@@ -123,18 +124,17 @@ const Login = () => {
                                    variant={"outlined"}
                                    label={"Password"}
                                    inputRef={passwordRef}
-                                   size={"small"} fullWidth
+                                   fullWidth
                                    error={errors.password}
                                    helperText={errorMessages.password}
                                    required
                                    InputProps={{
                                        endAdornment:
                                            <InputAdornment position="end">
-                                               <IconButton size={"small"}
-                                                           aria-label="toggle password visibility"
-                                                           onClick={handleClickShowPassword}
-                                                           edge="end"
-                                                           sx={{borderRadius: "50% !important"}}
+                                               <IconButton
+                                                   aria-label="toggle password visibility"
+                                                   onClick={handleClickShowPassword}
+                                                   edge="end"
                                                >
                                                    {showPassword ? <VisibilityOff/> : <Visibility/>}
                                                </IconButton>

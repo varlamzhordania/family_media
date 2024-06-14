@@ -1,5 +1,10 @@
 from .settings import *
+from oauth2_provider.settings import DEFAULTS
 import os
+
+# expires in 6 months
+DEFAULTS['ACCESS_TOKEN_EXPIRE_SECONDS'] = 1.577e7
+FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 Mb limit
 
 ALLOWED_HOSTS = ["*"]
 

@@ -17,8 +17,10 @@ class Post(BaseModel):
         on_delete=models.CASCADE,
         related_name='my_posts',
         verbose_name=_("author"),
+        blank=True,
     )
     text = models.TextField(_("text"), max_length=500, blank=True, null=True)
+    is_active = models.BooleanField(verbose_name=_("Visible"), default=True)
 
     def __str__(self):
         return f"{self.id} {self.author}"
