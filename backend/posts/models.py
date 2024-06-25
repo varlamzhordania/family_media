@@ -3,6 +3,7 @@ import os
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
+from mptt.models import MPTTModel, TreeForeignKey
 
 from main.models import Family, FamilyMembers
 from core.utils import BaseModel, UploadPath
@@ -23,7 +24,7 @@ class Post(BaseModel):
     is_active = models.BooleanField(verbose_name=_("Visible"), default=True)
 
     def __str__(self):
-        return f"{self.id} {self.author}"
+        return f"post-{self.id}"
 
 
 class PostMedia(BaseModel):
@@ -43,6 +44,7 @@ class PostLike(BaseModel):
     users = models.ManyToManyField(
         FamilyMembers,
         verbose_name=_("Users"),
+        blank=True,
     )
     counter = models.IntegerField(default=0, verbose_name=_("Counter value"), validators=[MinValueValidator(0)])
 
@@ -63,13 +65,21 @@ class PostLike(BaseModel):
         self.save()
 
 
-class Comment(BaseModel):
+class Comment(BaseModel, MPTTModel):
     post = models.ForeignKey(Post, verbose_name=_("Post"), on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(
         FamilyMembers,
         verbose_name=_("Author"),
         on_delete=models.CASCADE,
         related_name="comments"
+    )
+    parent = TreeForeignKey(
+        "self",
+        verbose_name=_("Parent"),
+        null=True,
+        blank=True,
+        related_name="children",
+        on_delete=models.CASCADE
     )
     text = models.TextField(_("Text"), max_length=500, blank=False, null=False)
 
@@ -80,6 +90,9 @@ class Comment(BaseModel):
 
     def __str__(self):
         return f"{self.author} on {self.post}"
+
+    def get_family(self):
+        return self.post.author.family
 
 
 class CommentLike(BaseModel):

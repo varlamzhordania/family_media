@@ -42,7 +42,6 @@ class Family(BaseModel):
         unique=True,
         blank=True,
         null=True,
-        default=get_random_string(10, "QWERTYUIOPASDFGHJKLZXCVBNM123456789")
     )
 
     class Meta:
@@ -53,9 +52,10 @@ class Family(BaseModel):
     def __str__(self):
         return self.name
 
-    def set_new_invite_code(self):
+    def set_invite_code(self):
         self.invite_code = get_random_string(10, "QWERTYUIOPASDFGHJKLZXCVBNM123456789")
-        return self.save()
+        self.save()
+        return self.invite_code
 
 
 class FamilyMembers(BaseModel):

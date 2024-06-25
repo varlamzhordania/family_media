@@ -1,12 +1,12 @@
 import {Navigate} from "react-router-dom";
-import {getToken} from "@lib/utils/token.js";
 import Home from "./Home.jsx";
 import DefaultLayout from "@layout/DefaultLayout.jsx";
+import {useAccessToken} from "@lib/hooks/useToken.jsx";
 
 const RootPage = () => {
-    const token = getToken()
+    const [accessToken, _] = useAccessToken()
 
-    if (token) {
+    if (accessToken) {
         return (
             <DefaultLayout><Home/></DefaultLayout>
         )

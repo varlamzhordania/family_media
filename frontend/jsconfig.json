@@ -34,10 +34,10 @@
       "@layout/*": [
         "./src/layout/*"
       ],
-      "@public": [
+      "@public/*": [
         "./public/*"
       ],
-      "@lib": [
+      "@lib/*": [
         "./src/lib/*"
       ]
     }

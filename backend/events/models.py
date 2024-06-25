@@ -55,9 +55,8 @@ class Invitation(BaseModel):
         max_length=32,
         unique=True,
         verbose_name=_("Invitation Code"),
-        blank=False,
-        null=False,
-        default=get_random_string(32, "QWERTYUIOPASDFGHJKLZXCVBNM123456789")
+        blank=True,
+        null=True,
     )
     expires_at = models.DateTimeField(verbose_name=_("Expiration Date"), blank=True, null=True)
 
@@ -74,3 +73,8 @@ class Invitation(BaseModel):
         self.expires_at = timezone.now() + timedelta(minutes=minute)
         self.save()
         return self.expires_at
+
+    def set_invitation_code(self):
+        self.invitation_code = get_random_string(32, "QWERTYUIOPASDFGHJKLZXCVBNM123456789")
+        self.save()
+        return self.invitation_code

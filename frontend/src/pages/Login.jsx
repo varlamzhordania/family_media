@@ -13,10 +13,14 @@ import {
 import {Facebook, Google, Visibility, VisibilityOff} from "@mui/icons-material";
 import {Link as RouterLink, useNavigate} from "react-router-dom";
 import {useRef, useState} from "react";
-import {getToken, removeToken} from "@lib/utils/token.js";
 import {loginService} from "@lib/services/authService.js";
+import {useAccessToken} from "@lib/hooks/useToken.jsx";
+import {useMemberships, useUser} from "@lib/hooks/useUser.jsx";
 
 const Login = () => {
+    const [accessToken, setAccessToken] = useAccessToken()
+    const [_, setUser] = useUser()
+    const [__, setMemberShips] = useMemberships()
     const [showPassword, setShowPassword] = useState(false)
     const [errors, setErrors] = useState({email: false, password: false})
     const [errorMessages, setErrorMessages] = useState({email: "", password: "", general: ""});
@@ -24,7 +28,6 @@ const Login = () => {
     const emailRef = useRef()
     const passwordRef = useRef()
     const navigate = useNavigate()
-    const token = getToken()
     const handleClickShowPassword = () => {
         setShowPassword(prevState => !prevState)
     }
@@ -52,7 +55,8 @@ const Login = () => {
 
         setLoading(true);
         try {
-            await loginService(prepData);
+            const response = await loginService(prepData);
+            setAccessToken(response.access_token, null)
             navigate("/")
         } catch (error) {
             console.error("Login failed:", error);
@@ -68,11 +72,13 @@ const Login = () => {
     }
 
     const handleLogout = () => {
-        removeToken();
+        setAccessToken(null, null)
+        setUser(null, null)
+        setMemberShips(null, null)
         navigate("/auth/login");
     };
 
-    if (token) {
+    if (accessToken) {
         return (
             <Container className={"center-container"} maxWidth={"sm"}>
                 <Card sx={{boxShadow: "unset"}}>

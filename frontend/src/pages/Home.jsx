@@ -6,23 +6,35 @@ import {
     CardActions,
     CardContent,
     CardHeader,
-    CardMedia, Grid,
+    CardMedia, Grid, IconButton,
     Skeleton,
     Typography
 } from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
-import {listService} from "@lib/services/postService.js";
+import {likeService, listService} from "@lib/services/postService.js";
 import {getNormalDate} from "@lib/utils/times.js";
 import RecentMessages from "@components/RecentMessages/RecentMessages.jsx";
 import FabAddPost from "@components/FabAddPost/FabAddPost.jsx";
 import EmptyImage from "@public/empty.svg"
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {Favorite, FavoriteBorder, ModeCommentOutlined} from "@mui/icons-material";
+import CommentDrawer from "@components/CommentDrawer/CommentDrawer.jsx";
+import {useMemberships} from "@lib/hooks/useUser.jsx";
 
 const Home = () => {
-    const [showDrawer, setShowDrawer] = useState(false)
-    const handleDrawer = () => {
-        setShowDrawer(prevState => !prevState)
+    const [showPostDrawer, setShowPostDrawer] = useState(false)
+    const [showCommentDrawer, setShowCommentDrawer] = useState(false)
+    const [selectedComment, setSelectedComment] = useState(null)
+    const handlePostDrawer = () => {
+        setShowPostDrawer(prevState => !prevState)
     }
+    const handleCommentDrawer = () => {
+        setShowCommentDrawer(prevState => !prevState)
+    }
+    const onCommentClick = (id) => {
+        setSelectedComment(id)
+    }
+
 
     const postQuery = useQuery({
         queryKey: ["posts"],
@@ -35,8 +47,10 @@ const Home = () => {
                 <Box sx={{display: "flex", flexDirection: "column", gap: 3, pb: 4}}>
                     {
                         postQuery?.isLoading ? <PostSkeleton/>
-                            : postQuery?.data?.count === 0 ? (<EmptyPosts handleDrawer={handleDrawer}/>)
-                                : postQuery?.data?.results?.map(item => (<PostCard key={item.id} data={item}/>))
+                            : postQuery?.data?.count === 0 ? (<EmptyPosts handleDrawer={handlePostDrawer}/>)
+                                : postQuery?.data?.results?.map(item => (
+                                    <PostCard key={item.id} data={item} handleCommentDrawer={handleCommentDrawer}
+                                              handleComment={onCommentClick}/>))
 
                     }
                 </Box>
@@ -44,12 +58,18 @@ const Home = () => {
             <Grid item xs={12} sm={8} md={3} lg={3} xl={3} order={{xs: 1, md: 2}}>
                 <RecentMessages/>
             </Grid>
-            <FabAddPost showDrawer={showDrawer} handleDrawer={handleDrawer}/>
+            <FabAddPost showDrawer={showPostDrawer} handleDrawer={handlePostDrawer}/>
+            <CommentDrawer showDrawer={showCommentDrawer} handleDrawer={handleCommentDrawer}
+                           selectedPost={selectedComment}/>
         </>
     )
 }
 
-const PostCard = ({data}) => {
+const PostCard = ({data, handleComment, handleCommentDrawer}) => {
+    const [memberShips, _] = useMemberships()
+    const [liked, setLiked] = useState(false)
+    const [likeCounter, setLikeCounter] = useState(0)
+
     const getFeaturedMedia = (medias) => {
         // Filter for featured media
         const featuredMedia = medias.find(item => item?.is_featured === true);
@@ -92,6 +112,53 @@ const PostCard = ({data}) => {
         const ext = getExtension(getFeaturedMedia(data?.medias))
         return videoExtensions.includes(ext) ? "video" : "img"
     }
+    const getLikeStatus = () => {
+        const likesUser = data?.likes?.users || [];
+        const membershipIds = memberShips.map(member => member.id);
+        return likesUser.some(userId => membershipIds.includes(userId));
+    };
+    const handleLike = async () => {
+        if (liked) {
+            // it means dislike
+            const prepData = {
+                post: data.id,
+                action: "UNLIKE",
+            }
+            try {
+                const {likes_count} = await likeService(JSON.stringify(prepData))
+                setLiked(false)
+                setLikeCounter(likes_count)
+            } catch (error) {
+                console.log(error)
+            }
+
+
+        } else {
+            // it means like
+            const prepData = {
+                post: data.id,
+                action: "LIKE",
+            }
+            try {
+                const {likes_count} = await likeService(JSON.stringify(prepData))
+                setLiked(true)
+                setLikeCounter(likes_count)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    }
+
+    useEffect(() => {
+        setLiked(getLikeStatus())
+        setLikeCounter(data?.likes?.counter)
+    }, [data])
+
+    const handleCommentClick = (id) => {
+        handleComment(id)
+        handleCommentDrawer()
+
+    }
 
 
     return (
@@ -107,14 +174,36 @@ const PostCard = ({data}) => {
                 src={getFeaturedMedia(data?.medias) || "/default-picture.png"}
             />
             <CardContent>
-                <Typography variant="body2" color="text.secondary">
+                <Box sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    width: "100%",
+                }}>
+                    <Box sx={{display: "flex", gap: 1, alignItems: "start", justifyContent: "start"}}>
+                        <Box sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "center"
+                        }}>
+                            <IconButton size={"medium"} onClick={handleLike}>
+                                {
+                                    liked ? <Favorite fontSize={"medium"}/>
+                                        : <FavoriteBorder fontSize={"medium"}/>
+                                }
+                            </IconButton>
+                            <Typography variant={"caption"} component={"small"}>{likeCounter}</Typography>
+                        </Box>
+                        <IconButton size={"medium"} onClick={() => handleCommentClick(data.id)}>
+                            <ModeCommentOutlined fontSize={"medium"}/>
+                        </IconButton>
+                    </Box>
+                </Box>
+                <Typography variant="body1" mt={1} fontWeight={500} color="text.secondary">
                     {data?.text}
                 </Typography>
             </CardContent>
-            <CardActions>
-                <Button>Share</Button>
-                <Button>Learn More</Button>
-            </CardActions>
         </Card>
     )
 }
@@ -124,7 +213,7 @@ const PostSkeleton = () => {
             <CardHeader title={<Skeleton variant={"text"} width={"25%"}/>}
                         subheader={<Skeleton variant={"text"} width={"15%"}/>}
                         avatar={<Skeleton variant={"circular"} width={"40px"} height={"40px"}/>}/>
-            <Skeleton sx={{height: {xs: 150,sm:200, md: 300, lg: 440,xl:540}}} width={"100%"} variant={"rectangular"}/>
+            <Skeleton sx={{height: {xs: 150, sm: 200, md: 300, lg: 440, xl: 540}}} width={"100%"} variant={"rectangular"}/>
             <CardContent>
                 <Skeleton variant={"text"} width={"25%"} height={30}/>
                 <Skeleton variant={"text"} width={"75%"} height={28}/>

@@ -42,11 +42,13 @@ INSTALLED_APPS = [
     "posts.apps.PostsConfig",
     # Third party packages
     "rest_framework",
+    'django_filters',
     "drf_spectacular",
     'oauth2_provider',
     'social_django',
     'drf_social_oauth2',
     "corsheaders",
+    'mptt',
 
 ]
 

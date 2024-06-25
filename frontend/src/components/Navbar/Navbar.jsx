@@ -1,10 +1,14 @@
 import {AppBar, Box, Container, IconButton, ListItemIcon, Menu, MenuItem, Toolbar, Typography} from "@mui/material";
 import {AccountCircle, Logout, Person, Settings} from "@mui/icons-material";
 import {useState} from "react";
-import {removeToken} from "@lib/utils/token.js";
 import {useNavigate} from "react-router-dom";
+import {useAccessToken} from "@lib/hooks/useToken.jsx";
+import {useMemberships, useUser} from "@lib/hooks/useUser.jsx";
 
 const Navbar = () => {
+    const [accessToken, setAccessToken] = useAccessToken()
+    const [_, setUser] = useUser()
+    const [__, setMemberShips] = useMemberships()
     const [anchorEl, setAnchorEl] = useState(null);
     const navigate = useNavigate()
     const handleMenu = (event) => {
@@ -16,7 +20,9 @@ const Navbar = () => {
     };
 
     const handleLogout = () => {
-        removeToken();
+        setAccessToken(null, null)
+        setUser(null, null)
+        setMemberShips(null, null)
         navigate("/auth/login");
     };
 
