@@ -4,11 +4,9 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import {useMemberships, useUser} from "@lib/hooks/useUser.jsx";
+import {logout} from "@lib/utils/auth.js";
 
 const Navbar = () => {
-    const [accessToken, setAccessToken] = useAccessToken()
-    const [_, setUser] = useUser()
-    const [__, setMemberShips] = useMemberships()
     const [anchorEl, setAnchorEl] = useState(null);
     const navigate = useNavigate()
     const handleMenu = (event) => {
@@ -20,9 +18,7 @@ const Navbar = () => {
     };
 
     const handleLogout = () => {
-        setAccessToken(null, null)
-        setUser(null, null)
-        setMemberShips(null, null)
+        logout()
         navigate("/auth/login");
     };
 

@@ -168,7 +168,7 @@ const PostCard = ({data, handleComment, handleCommentDrawer}) => {
                 title={data?.author?.member?.full_name}
                 subheader={getNormalDate(data?.created_at)}/>
             <CardMedia
-                sx={{height: "auto"}}
+                sx={{height: "auto", maxHeight: {xs:300,sm:350,md:400,lg:450,xl:500}}}
                 component={getComponent()}
                 controls
                 src={getFeaturedMedia(data?.medias) || "/default-picture.png"}

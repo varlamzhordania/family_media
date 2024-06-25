@@ -15,12 +15,10 @@ import {Link as RouterLink, useNavigate} from "react-router-dom";
 import {useRef, useState} from "react";
 import {loginService} from "@lib/services/authService.js";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
-import {useMemberships, useUser} from "@lib/hooks/useUser.jsx";
+import {logout} from "@lib/utils/auth.js";
 
 const Login = () => {
     const [accessToken, setAccessToken] = useAccessToken()
-    const [_, setUser] = useUser()
-    const [__, setMemberShips] = useMemberships()
     const [showPassword, setShowPassword] = useState(false)
     const [errors, setErrors] = useState({email: false, password: false})
     const [errorMessages, setErrorMessages] = useState({email: "", password: "", general: ""});
@@ -72,9 +70,7 @@ const Login = () => {
     }
 
     const handleLogout = () => {
-        setAccessToken(null, null)
-        setUser(null, null)
-        setMemberShips(null, null)
+        logout()
         navigate("/auth/login");
     };
 
