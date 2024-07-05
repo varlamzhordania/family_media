@@ -3,6 +3,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 
+from .helpers import send_email_verification
+
 User = get_user_model()
 
 
@@ -10,3 +12,9 @@ User = get_user_model()
 def update_last_ip_address(sender, request, user, **kwargs):
     user.last_ip = request.META.get('REMOTE_ADDR')
     user.save()
+
+
+@receiver(post_save, sender=User)
+def send_verification_email(sender, instance, created, **kwargs):
+    if created and not instance.email_verified:
+        send_email_verification(instance)

@@ -1,9 +1,17 @@
-import {AppBar, Box, Container, IconButton, ListItemIcon, Menu, MenuItem, Toolbar, Typography} from "@mui/material";
+import {
+    AppBar,
+    Box,
+    Container,
+    IconButton,
+    ListItemIcon,
+    Menu,
+    MenuItem,
+    Toolbar,
+    Typography
+} from "@mui/material";
 import {AccountCircle, Logout, Person, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useAccessToken} from "@lib/hooks/useToken.jsx";
-import {useMemberships, useUser} from "@lib/hooks/useUser.jsx";
 import {logout} from "@lib/utils/auth.js";
 
 const Navbar = () => {
@@ -77,18 +85,11 @@ const Navbar = () => {
                                 open={Boolean(anchorEl)}
                                 onClose={handleClose}
                             >
-                                <MenuItem onClick={handleClose}>
+                                <MenuItem onClick={()=>navigate("/account")}>
                                     <ListItemIcon>
                                         <Person/>
                                     </ListItemIcon>
-                                    Profile
-                                </MenuItem>
-                                <MenuItem onClick={handleClose}>
-                                    <ListItemIcon>
-                                        <Settings/>
-                                    </ListItemIcon>
-
-                                    Settings
+                                    Account
                                 </MenuItem>
                                 <MenuItem onClick={handleLogout}>
                                     <ListItemIcon>

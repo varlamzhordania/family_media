@@ -21,6 +21,12 @@ class PostLikeSerializer(serializers.ModelSerializer):
         fields = ['counter', 'users']
 
 
+class PostMediaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostMedia
+        fields = ['post', 'file', 'is_featured']
+
+
 class PostMediaSerializer(serializers.ModelSerializer):
     ext = serializers.SerializerMethodField(read_only=True)
 

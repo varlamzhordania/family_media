@@ -11,11 +11,12 @@ import {
     Link, InputAdornment, IconButton, CircularProgress
 } from "@mui/material";
 import {Facebook, Google, Visibility, VisibilityOff} from "@mui/icons-material";
-import {Link as RouterLink, useNavigate} from "react-router-dom";
+import {Link as RouterLink, Navigate} from "react-router-dom";
 import {useRef, useState} from "react";
 import {loginService} from "@lib/services/authService.js";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
-import {logout} from "@lib/utils/auth.js";
+import toast from "react-hot-toast";
+import {handleError} from "@lib/utils/service.js";
 
 const Login = () => {
     const [accessToken, setAccessToken] = useAccessToken()
@@ -25,7 +26,6 @@ const Login = () => {
     const [loading, setLoading] = useState(false)
     const emailRef = useRef()
     const passwordRef = useRef()
-    const navigate = useNavigate()
     const handleClickShowPassword = () => {
         setShowPassword(prevState => !prevState)
     }
@@ -55,10 +55,10 @@ const Login = () => {
         try {
             const response = await loginService(prepData);
             setAccessToken(response.access_token, null)
-            navigate("/")
+            toast.success("Welcome back.")
         } catch (error) {
-            console.error("Login failed:", error);
-            setErrorMessages(prevState => ({...prevState, general: error.message}));
+            setErrorMessages(prevState => ({...prevState, general: error?.error}));
+            handleError(error)
         } finally {
             setLoading(false);
         }
@@ -69,40 +69,9 @@ const Login = () => {
         handleLogin()
     }
 
-    const handleLogout = () => {
-        logout()
-        navigate("/auth/login");
-    };
 
     if (accessToken) {
-        return (
-            <Container className={"center-container"} maxWidth={"sm"}>
-                <Card sx={{boxShadow: "unset"}}>
-                    <CardHeader
-                        title={"You Are Already Signed In"}
-                        titleTypographyProps={{fontWeight: "bold", fontSize: 42}}
-                        subheader={"You are already logged into your account."}
-                    />
-                    <CardContent>
-                        <Box sx={boxStyles}>
-                            <Button
-                                variant={"contained"}
-                                onClick={() => navigate("/")}
-                                fullWidth
-                            >
-                                Go to Dashboard
-                            </Button>
-                            <Button
-                                variant={"outlined"}
-                                onClick={handleLogout} fullWidth
-                            >
-                                Log Out
-                            </Button>
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Container>
-        );
+        return <Navigate to={"/"} replace={true}/>
     }
 
     return (
@@ -110,20 +79,19 @@ const Login = () => {
             <Card sx={{boxShadow: 1}}>
                 <CardHeader
                     title={"Sign In"}
-                    titleTypographyProps={{fontWeight: "bold", fontSize: 42}}
+                    titleTypographyProps={{fontWeight: "bold", fontSize: 42,color:"primary"}}
                     subheader={"sign in to your account to continue using platform"}
                 />
                 <CardContent>
                     <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
-                        <TextField type={"email"} id={"id_email"} name={"email"} variant={"outlined"} label={"Email"}
-                                   placeholder={"please enter your email address"}
+                        <TextField type={"email"} id={"id_email"} name={"email"} label={"Email"}
+                                   placeholder={"Write your email address here..."}
                                    fullWidth inputRef={emailRef} error={errors.email}
                                    helperText={errorMessages.email}
                                    required
                         />
                         <TextField type={showPassword ? "text" : "password"} id={"id_password"} name={"password"}
                                    placeholder={"********"}
-                                   variant={"outlined"}
                                    label={"Password"}
                                    inputRef={passwordRef}
                                    fullWidth
@@ -143,25 +111,29 @@ const Login = () => {
                                            </InputAdornment>
                                    }}
                         />
-                        <Link to={"/auth/forget-password/"} component={RouterLink} color={"secondary"}>forget your
-                            password ?</Link>
-                        <Button variant={"contained"} type={"submit"}>
-                            {loading ? <CircularProgress color={"background"} size={25}/> : "Sign In"}
+                        <Link to={"/auth/forget-password/"} component={RouterLink} color={"secondary"}>
+                            forget your password ?
+                        </Link>
+                        <Button variant={"soft"} type={"submit"}>
+                            {loading ? <CircularProgress color={"primary"} size={25}/> : "Sign In"}
                         </Button>
                         <Divider>OR</Divider>
                         <Box sx={{maxWidth: "450px"}}>
-                            <Button variant={"soft"} fullWidth
+                            <Button variant={"soft"} color={"grey"} fullWidth
                                     sx={{justifyContent: "flex-start", textTransform: "unset"}}>
                                 <Google sx={{mx: 1}}/>
                                 <Typography variant={"body1"} fontWeight={"bold"}>Continue with Google</Typography>
                             </Button>
-                            <Button variant={"soft"} fullWidth
+                            <Button variant={"soft"} color={"grey"} fullWidth
                                     sx={{my: 2, justifyContent: "flex-start", textTransform: "unset"}}>
                                 <Facebook sx={{mx: 1}}/>
                                 <Typography variant={"body1"} fontWeight={"bold"}>Continue with Facebook
                                     account</Typography>
                             </Button>
                         </Box>
+                        <Link to={"/auth/register/"} component={RouterLink} color={"primary"}>
+                            Dont have an account ? <strong>create one here.</strong>
+                        </Link>
 
                     </Box>
                 </CardContent>

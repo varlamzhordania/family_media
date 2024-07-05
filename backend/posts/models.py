@@ -2,11 +2,12 @@ import os
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from mptt.models import MPTTModel, TreeForeignKey
 
 from main.models import Family, FamilyMembers
 from core.utils import BaseModel, UploadPath
+from core.validators import ValidateFileSize
 
 
 # Create your models here.
@@ -29,7 +30,19 @@ class Post(BaseModel):
 
 class PostMedia(BaseModel):
     post = models.ForeignKey(Post, verbose_name=_("Post"), on_delete=models.CASCADE, related_name="medias")
-    file = models.FileField(upload_to=UploadPath(folder="posts", sub_path="media"))
+    file = models.FileField(
+        upload_to=UploadPath(folder="posts", sub_path="media"),
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=[
+                    'jpg', 'jpeg', 'pjpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'tif', 'svg', 'heif', 'heic',
+                    # Image formats
+                    'mp4', 'webm', 'avi', 'mkv', 'mpeg', 'mpg', 'mov', 'wmv', 'flv', '3gp', 'm4v'  # Video formats
+                ]
+            ),
+            ValidateFileSize()
+        ]
+    )
     is_featured = models.BooleanField(_("Is featured"), default=False)
 
     def __str__(self):

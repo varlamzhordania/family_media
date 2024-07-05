@@ -20,13 +20,13 @@ const SideNavigation = () => {
 }
 
 const buttonStyle = {
-    backgroundColor: "background.main",
-    boxShadow: 2,
-    borderRadius: (theme) => theme.shape.borderRadius / 2.5,
+    backgroundColor: "#fff",
+    boxShadow: 1,
+    borderRadius: (theme) => theme.shape.borderRadius / 8,
     "&:hover": {
         backgroundColor: "primary.main",
         color: "white",
-        boxShadow: 5,
+        boxShadow: 4,
     },
     "&:hover .MuiListItemIcon-root": {
         color: "white",

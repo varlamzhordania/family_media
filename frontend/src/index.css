@@ -1,5 +1,7 @@
 
-
+body{
+    overflow-x: hidden;
+}
 
 .center-container {
     display: flex !important;
@@ -28,3 +30,10 @@
     letter-spacing: 1px;
 }
 
+
+swiper-container::part(bullet) {
+  background-color: #009688;
+}
+swiper-container::part(bullet-active) {
+  background-color: #009688;
+}

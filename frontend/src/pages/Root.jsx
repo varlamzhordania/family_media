@@ -1,14 +1,13 @@
-import {Navigate} from "react-router-dom";
-import Home from "./Home.jsx";
-import DefaultLayout from "@layout/DefaultLayout.jsx";
+import {Navigate, Outlet} from "react-router-dom";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
+import DefaultLayout from "@layout/DefaultLayout.jsx";
 
 const RootPage = () => {
     const [accessToken, _] = useAccessToken()
 
     if (accessToken) {
         return (
-            <DefaultLayout><Home/></DefaultLayout>
+            <DefaultLayout><Outlet/></DefaultLayout>
         )
     }
 

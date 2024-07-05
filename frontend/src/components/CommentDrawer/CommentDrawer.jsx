@@ -11,9 +11,12 @@ import {
 } from "@mui/material";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {createService, listService} from "@lib/services/commentService.js";
-import {getNormalDate} from "@lib/utils/times.js";
+import {getFormattedDate} from "@lib/utils/times.js";
 import {useRef} from "react";
 import {Send} from "@mui/icons-material";
+import toast from "react-hot-toast";
+import {useUser} from "@lib/hooks/useUser.jsx";
+import {handleError} from "@lib/utils/service.js";
 
 const CommentDrawer = ({handleDrawer, showDrawer, selectedPost}) => {
 
@@ -51,6 +54,7 @@ const CommentDrawer = ({handleDrawer, showDrawer, selectedPost}) => {
 }
 
 const Form = ({id}) => {
+    const [user, _] = useUser()
     const inputRef = useRef()
     const queryClient = useQueryClient()
 
@@ -58,7 +62,7 @@ const Form = ({id}) => {
         e.preventDefault()
         const text = inputRef.current.value
         if (text === null || text.strip === "")
-            alert("Please Make Sure you have entered your comment correctly")
+            toast.error("Please Make Sure you have entered your comment correctly")
 
         try {
             const prepData = {
@@ -67,17 +71,18 @@ const Form = ({id}) => {
             }
             await createService(JSON.stringify(prepData))
             inputRef.current.value = ""
+            toast.success("Have submitted a new comment.")
             queryClient.refetchQueries({queryKey: ["comments", id]})
 
         } catch (error) {
-            console.log(error)
+            handleError(error)
         }
     }
 
 
     return (
         <ListItem>
-            <Card elevation={2} sx={{width: "100%"}}>
+            <Card variant={"outlined"} sx={{width: "100%"}}>
                 <CardContent sx={{paddingBottom: "16px !important"}}>
                     <form onSubmit={handleSubmit}>
                         <Box sx={{
@@ -87,14 +92,14 @@ const Form = ({id}) => {
                             justifyContent: "space-between",
                             alignItems: "start",
                         }}>
+                            <Avatar src={user?.avatar} alt={user?.initial_name}/>
                             <TextField inputRef={inputRef}
                                        variant={"outlined"}
                                        fullWidth
                                        multiline
-                                       label={"Your comment"}
                                        inputMode={"text"}
                                        type={"text"}
-                                       placeholder={"enter your text here"}
+                                       placeholder={"Write a comment..."}
                                        required
                             />
                             <IconButton size={"medium"} type={"submit"} role={"button"}>
@@ -114,11 +119,11 @@ const CommentItem = ({data}) => {
 
     return (
         <ListItem key={data.id}>
-            <Card elevation={2} sx={{width: "100%"}}>
+            <Card variant={"outlined"} sx={{width: "100%"}}>
                 <CardHeader
                     avatar={<Avatar>{data?.author?.member?.initial_name?.toUpperCase()}</Avatar>}
                     title={data?.author?.member?.full_name}
-                    subheader={getNormalDate(data?.created_at)}
+                    subheader={getFormattedDate(data?.created_at, {showDate: true, showTime: true})}
                 />
                 <CardContent>
                     <Typography variant="body1" mt={1} fontWeight={500} color="text.secondary">
@@ -136,7 +141,7 @@ const CommentItem = ({data}) => {
 const CommentSkeleton = () => {
     return Array.from(Array(10)).map((item, index) => (
             <ListItem key={index}>
-                <Card elevation={2} sx={{width: "100%"}}>
+                <Card elevation={"z8"} sx={{width: "100%"}}>
                     <CardHeader
                         avatar={<Skeleton variant={"circular"} width={45} height={45}/>}
                         title={<Skeleton variant={"text"} width={300}/>}/>

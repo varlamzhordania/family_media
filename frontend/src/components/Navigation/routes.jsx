@@ -1,4 +1,4 @@
-import {AccountCircle, Collections, Diversity2, Forum, Home, Settings} from "@mui/icons-material";
+import {AccountCircle, Diversity2, Forum, Home} from "@mui/icons-material";
 
 export const routes = [
     {
@@ -9,7 +9,7 @@ export const routes = [
     {
         title: "Family",
         icon: <Diversity2/>,
-        href: "/",
+        href: "/family/",
     },
     {
         title: "Messages",
@@ -17,18 +17,8 @@ export const routes = [
         href: "/",
     },
     {
-        title: "Gallery",
-        icon: <Collections/>,
-        href: "/",
-    },
-    {
-        title: "Profile",
+        title: "Account",
         icon: <AccountCircle/>,
-        href: "/",
-    },
-    {
-        title: "Settings",
-        icon: <Settings/>,
-        href: "/",
+        href: "/account/",
     },
 ]

@@ -14,8 +14,8 @@ from django.db import transaction
 from main.models import FamilyMembers
 
 from .models import Post, PostMedia, PostLike, Comment, CommentLike
-from .serializers import PostCreateSerializer, PostSerializer, PostMediaSerializer, CommentSerializer, \
-    CommentCreateSerializer
+from .serializers import PostCreateSerializer, PostSerializer, PostMediaSerializer, PostMediaCreateSerializer, \
+    CommentSerializer, CommentCreateSerializer
 from .permissions import FamilyAccess
 
 
@@ -24,11 +24,23 @@ class PostListCreateView(ListAPIView, CreateAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_queryset(self, *args, **kwargs):
         user = self.request.user
+        family_param = self.request.query_params.get('family', None)
+
         try:
             user_families = FamilyMembers.objects.filter(member=user).values_list('family', flat=True)
-            return Post.objects.filter(author__family__in=user_families, is_active=True).order_by('-created_at')
+
+            # If the 'family' query parameter is provided, filter by it
+            if family_param:
+                # Ensure that the user has access to the family specified in the query parameter
+                if int(family_param) in user_families:
+                    return Post.objects.filter(author__family=family_param, is_active=True).order_by('-created_at')
+                else:
+                    return Post.objects.none()
+            else:
+                return Post.objects.filter(author__family__in=user_families, is_active=True).order_by('-created_at')
+
         except FamilyMembers.DoesNotExist:
             return Post.objects.none()
 
@@ -39,10 +51,9 @@ class PostListCreateView(ListAPIView, CreateAPIView):
             data = request.data.copy()
             files = request.FILES.getlist('media')
             cover_image = request.FILES.get('cover_image')
+            family = data['family']
 
-            family_member = FamilyMembers.objects.filter(member=user).first()
-            if not family_member:
-                return Response({'message': 'User is not a member of any family'}, status=status.HTTP_400_BAD_REQUEST)
+            family_member = FamilyMembers.objects.get(member=user, family=family)
 
             data['author'] = family_member.id
             data['is_active'] = True
@@ -52,18 +63,33 @@ class PostListCreateView(ListAPIView, CreateAPIView):
                 post = serializer.save()
 
                 if cover_image:
-                    PostMedia.objects.create(post=post, file=cover_image, is_featured=True)
+                    media_data = {'post': post.id, 'file': cover_image, 'is_featured': True}
+                    media_serializer = PostMediaCreateSerializer(data=media_data)
+                    if media_serializer.is_valid():
+                        media_serializer.save()
+                    else:
+                        transaction.set_rollback(True)
+                        return Response(media_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
                 for file in files:
-                    print(file)
-                    PostMedia.objects.create(post=post, file=file)
+                    media_data = {'post': post.id, 'file': file}
+                    media_serializer = PostMediaCreateSerializer(data=media_data)
+                    if media_serializer.is_valid():
+                        media_serializer.save()
+                    else:
+                        transaction.set_rollback(True)
+                        return Response(media_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
                 return Response(
                     {'message': 'success', 'post': PostSerializer(post, context={'request': request}).data},
                     status=status.HTTP_201_CREATED
                 )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except FamilyMembers.DoesNotExist:
+            transaction.set_rollback(True)
+            return Response({'detail': 'You are not a member of selected family.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            transaction.set_rollback(True)
             return Response(
                 {'message': f'Something went wrong: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -114,10 +140,10 @@ class PostLikeView(APIView):
             return Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@extend_schema(tags=['Posts', 'Comments'])
+@extend_schema(tags=['Comments'])
 class CommentModelViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [FamilyAccess]
+    permission_classes = [IsAuthenticated]
     queryset = Comment.objects.filter(is_active=True, level=0).order_by('-id')
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ('post',)
@@ -150,7 +176,7 @@ class CommentModelViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(tags=['Posts', 'Comments'])
+@extend_schema(tags=['Comments'])
 class CommentLikeView(APIView):
     permission_classes = [IsAuthenticated]
 

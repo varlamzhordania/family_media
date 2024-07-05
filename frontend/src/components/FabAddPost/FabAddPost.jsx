@@ -6,16 +6,21 @@ import {
     CardMedia, CircularProgress,
     Divider,
     Drawer,
-    Fab, IconButton,
+    Fab, FormControl, FormHelperText, IconButton, InputLabel, MenuItem, Select,
     TextField,
     Typography
 } from '@mui/material';
-import {Check, Close, CloudUpload, Delete, Edit} from '@mui/icons-material';
+import {Check, Close, Delete, Edit} from '@mui/icons-material';
 import {useRef, useState} from "react";
 import {createService} from "@src/lib/services/postService.js";
 import {useQueryClient} from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import {useMemberships} from "@lib/hooks/useUser.jsx";
+import {handleError} from "@lib/utils/service.js";
 
 const FabAddPost = ({handleDrawer, showDrawer}) => {
+    const [memberShips, _] = useMemberships()
+    const [family, setFamily] = useState(null)
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [coverFile, setCoverFile] = useState(null);
     const [loading, setLoading] = useState(false)
@@ -24,6 +29,16 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
         setUploadedFiles((prevFiles) => [...prevFiles, ...files]);
+    };
+
+    const handleDrop = (event) => {
+        event.preventDefault();
+        const files = Array.from(event.dataTransfer.files);
+        setUploadedFiles((prevFiles) => [...prevFiles, ...files]);
+    };
+
+    const handleDragOver = (event) => {
+        event.preventDefault();
     };
 
     const handleRemoveFile = (fileToRemove) => {
@@ -41,22 +56,25 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
 
         const formData = new FormData();
         formData.append('text', desRef.current.value);
+        formData.append("family", family)
 
         if (coverFile)
             formData.append('cover_image', coverFile);
 
         uploadedFiles.forEach(file => {
-            formData.append('media', file);
+            if (file !== coverFile)
+                formData.append('media', file);
         });
 
         try {
 
             await createService(formData)
             setLoading(false)
+            toast.success("Your new post successfully added.")
             queryClient.refetchQueries({queryKey: ["posts"]})
             handleDrawer()
         } catch (error) {
-            console.error('Error creating post:', error);
+            handleError(error)
             setLoading(false)
         }
     };
@@ -96,6 +114,21 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
                     <Divider sx={{marginBottom: 2}}/>
                     <form onSubmit={handleSubmit}>
                         <Box sx={{...wrapperStyle, padding: 0}}>
+                            <FormControl fullWidth>
+                                <InputLabel id="family-select-label">Family</InputLabel>
+                                <Select
+                                    labelId="family-select-label"
+                                    id="family-select"
+                                    value={family}
+                                    label="Family"
+                                    onChange={(e) => setFamily(e.target.value)}
+                                    required
+                                >
+                                    {memberShips?.map(item => <MenuItem key={item.id}
+                                                                        value={item?.family?.id}>{item?.family?.name}</MenuItem>)}
+                                </Select>
+                                <FormHelperText>Which family this post belong ?</FormHelperText>
+                            </FormControl>
                             <TextField
                                 type="text"
                                 name="text"
@@ -110,12 +143,22 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
                             />
                             <Button
                                 component="label"
-                                variant="contained"
+                                variant="outlined"
+                                fullWidth={true}
                                 color={"secondary"}
-                                startIcon={<CloudUpload/>}
-                                sx={{width: "200px"}}
+                                sx={{
+                                    height: "200px",
+                                    borderStyle: "dashed",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    textTransform: "capitalize",
+                                    textAlign: "center",
+                                }}
+                                onDrop={handleDrop}
+                                onDragOver={handleDragOver}
                             >
-                                Upload file
+                                Click to upload file or <br/> drag your files here
                                 <input
                                     hidden
                                     type="file"
@@ -133,11 +176,12 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
                                 />
                             )}
                             <Box sx={{display: "flex", justifyContent: "space-between", gap: 2}}>
-                                <Button variant={"contained"} color={"info"} disabled={loading}
+                                <Button variant={"soft"} color={"primary"} disabled={loading}
                                         type={"submit"} fullWidth>
                                     {loading ? <CircularProgress color={"background"} size={24}/> : 'Post'}
                                 </Button>
-                                <Button variant={"contained"} color={"action"} disabled={loading} onClick={handleDrawer} fullWidth>
+                                <Button variant={"soft"} color={"dark"} disabled={loading} onClick={handleDrawer}
+                                        fullWidth>
                                     Cancel
                                 </Button>
                             </Box>
@@ -156,7 +200,6 @@ const wrapperStyle = {
     gap: 2,
     padding: 3,
 };
-
 
 const UploadedFilesList = ({files, coverFile, onRemoveFile, onSetCoverFile}) => {
     return (

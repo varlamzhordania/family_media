@@ -13,7 +13,7 @@ import {Send} from "@mui/icons-material";
 const RecentMessages = () => {
     return (
         <List component={Paper} dense={true} disablePadding={true}
-              sx={{boxShadow: 2, position: "sticky", top: (theme) => theme.StickyTop}}>
+              sx={{boxShadow:"card" , position: "sticky", top: (theme) => theme.StickyTop}}>
             <ListItem sx={{borderBottom: "1px solid lightgrey"}}>
                 <ListItemText primary={"Inbox"}
                               primaryTypographyProps={{variant: "h4", fontWeight: "bold", color: "primary"}}/>

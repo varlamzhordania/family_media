@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.sites',
     # Inner applications
     "accounts.apps.AccountsConfig",
     "main.apps.MainConfig",
@@ -142,6 +143,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+FRONTEND_URL = "http://localhost:5173"
 
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailBackend',
@@ -173,6 +175,8 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
 }
+
+SITE_ID = 1
 
 LOGGING = {
     'version': 1,
