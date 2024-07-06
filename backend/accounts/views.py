@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from rest_framework import status, permissions
+from rest_framework import status, permissions, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
@@ -12,12 +12,13 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib.auth import get_user_model
 from django.views import View
+from django.db import transaction
 
 from .tokens import email_verification_token
-from .serializers import UserSerializer, UserCreateSerializer, PasswordResetRequestSerializer, \
+from .serializers import UserSerializer, UserCreateSerializer, RelationSerializer, PasswordResetRequestSerializer, \
     PasswordResetConfirmSerializer
 from .helpers import send_email_verification, send_password_reset_email
-from .models import User
+from .models import User, Relation
 
 from main.serializers import FamilyMembersSerializer
 
@@ -80,6 +81,7 @@ class UserView(APIView):
             }, status=status.HTTP_200_OK
         )
 
+    @transaction.atomic
     def patch(self, request: Request, format=None, *args, **kwargs) -> Response:
         """
         Update the authenticated user's information.
@@ -150,10 +152,12 @@ class VerifyEmailView(View):
             return HttpResponse('Invalid verification link.', status=400)
 
 
+@extend_schema(tags=["Account"])
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PasswordResetRequestSerializer
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -163,12 +167,49 @@ class PasswordResetRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(tags=["Account"])
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PasswordResetConfirmSerializer
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(tags=["Account"])
+class RelationViewSet(viewsets.ModelViewSet):
+    serializer_class = RelationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        return Relation.objects.filter(is_active=True, user=self.request.user)
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        obj = get_object_or_404(queryset, pk=self.kwargs.get('pk'))
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    @transaction.atomic
+    def partial_update(self, request: Request, *args, **kwargs) -> Response:
+        user = request.user
+        data = request.data.copy()
+        data['user'] = user.pk
+        related_id = data.get('related')
+
+        queryset = Relation.objects.filter(user=user, related=related_id)
+        relation = queryset.first() if queryset.exists() else None
+
+        serializer = RelationSerializer(relation, data=data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            new_query = self.get_queryset()
+            new_serializer = RelationSerializer(new_query, many=True, context={'request': request})
+            return Response(new_serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

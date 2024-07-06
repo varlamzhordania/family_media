@@ -1,16 +1,18 @@
-from django.shortcuts import render, get_object_or_404
-from rest_framework import status, generics
+from django.shortcuts import get_object_or_404
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
 
 from .models import Family, FamilyMembers, FamilyTree
 from .serializers import FamilySerializer, FamilyTreeSerializer
 from .helpers import have_permission
 
 
+@extend_schema(tags=['Family'])
 class FamilyView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -29,6 +31,7 @@ class FamilyView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(tags=['Family'])
 class ListJoinFamilyView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -62,6 +65,7 @@ class ListJoinFamilyView(APIView):
         return Response({"message": f"You joined the {family.name} family."}, status=status.HTTP_200_OK)
 
 
+@extend_schema(tags=['Family'])
 class RetrieveUpdateLeaveFamilyView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -108,6 +112,7 @@ class RetrieveUpdateLeaveFamilyView(APIView):
         return Response({"message": f"You left the {family.name} family."}, status=status.HTTP_204_NO_CONTENT)
 
 
+@extend_schema(tags=['Family'])
 class InviteView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -129,6 +134,7 @@ class InviteView(APIView):
             return Response({"detail": "An unexpected error occurred."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(tags=['Family'])
 class FamilyGroupsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -177,6 +183,7 @@ class FamilyGroupsView(APIView):
             return Response({"detail": "An unexpected error occurred."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(tags=['Family'])
 class FamilyTreeView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = FamilyTreeSerializer

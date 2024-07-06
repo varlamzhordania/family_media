@@ -38,32 +38,14 @@ const FamilyTree = ({family, query}) => {
 
     const handleModal = () => {
         setShowModal(prevState => !prevState)
+        setIsEditing(false)
+        setShowForm(false)
     }
     const handleShowForm = () => {
         setShowForm(prevState => !prevState)
     }
     const handleIsEditing = () => {
         setIsEditing(prevState => !prevState)
-    }
-
-    const handleEdit = () => {
-        handleIsEditing()
-        handleShowForm()
-    }
-
-    const handleDelete = async () => {
-        if (selectedNode.id) {
-            try {
-                await treeDeleteService(selectedNode.id)
-                toast.success(`${selectedNode?.name} deleted from your family tree.`)
-                treeQuery.refetch()
-                setSelectedNode(null)
-                handleModal()
-            } catch (error) {
-                handleError(error)
-            }
-        }
-
     }
 
 
@@ -102,50 +84,94 @@ const FamilyTree = ({family, query}) => {
                 }
             </CardContent>
             {
-                havePermission(user, query) && <Modal open={showModal} onClose={handleModal}>
-                    <Card sx={ModalStyle}>
-                        {
-                            selectedNode && <CardHeader title={selectedNode?.name}
-                                                        titleTypographyProps={{
-                                                            textTransform: "capitalize",
-                                                            fontWeight: 500,
-                                                            variant: "h4"
-                                                        }}/>
-                        }
+                havePermission(user, query) &&
+                <TreeModal showModal={showModal} handleModal={handleModal} selectedNode={selectedNode}
+                           setSelectedNode={setSelectedNode}
+                           handleShowForm={handleShowForm} family={family} isEditing={isEditing}
+                           handleIsEditing={handleIsEditing} treeQuery={treeQuery} showForm={showForm}/>
 
-                        {
-                            showForm ?
-                                <FormCardContent selectedNode={selectedNode} handleShowForm={handleShowForm}
-                                                 handleModal={handleModal} family={family}
-                                                 query={treeQuery} isEditing={isEditing}
-                                                 handleIsEditing={handleIsEditing}/> :
-                                <InfoCardContent selectedNode={selectedNode}/>
-                        }
-                        <CardActions>
-                            {
-                                !showForm && <>
-                                    <Button variant={"soft"} startIcon={<Add/>} onClick={handleShowForm} fullWidth>
-                                        Add Children
-                                    </Button>
-                                    {
-                                        selectedNode && <>
-                                            <Button variant={"soft"} color={"info"} startIcon={<Edit/>}
-                                                    onClick={handleEdit} fullWidth>Edit</Button>
-                                            <Button variant={"soft"} color={"error"} startIcon={<Delete/>}
-                                                    onClick={handleDelete} fullWidth>Delete</Button>
-                                        </>
-                                    }
-                                </>
-                            }
-
-                        </CardActions>
-                    </Card>
-                </Modal>
             }
-
         </Card>
     )
 }
+
+const TreeModal = ({
+                       showModal,
+                       handleModal,
+                       selectedNode, setSelectedNode,
+                       handleShowForm,
+                       treeQuery,
+                       showForm,
+                       family,
+                       isEditing,
+                       handleIsEditing
+                   }) => {
+
+    const handleEdit = () => {
+        handleIsEditing()
+        handleShowForm()
+    }
+
+    const handleDelete = async () => {
+        if (selectedNode.id) {
+            try {
+                await treeDeleteService(selectedNode.id)
+                toast.success(`${selectedNode?.name} deleted from your family tree.`)
+                treeQuery.refetch()
+                setSelectedNode(null)
+                handleModal()
+            } catch (error) {
+                handleError(error)
+            }
+        }
+
+    }
+
+    return (
+        <Modal open={showModal} onClose={handleModal}>
+            <Card sx={ModalStyle}>
+                {
+                    selectedNode && <CardHeader title={selectedNode?.name}
+                                                titleTypographyProps={{
+                                                    textTransform: "capitalize",
+                                                    fontWeight: 500,
+                                                    variant: "h4"
+                                                }}/>
+                }
+
+                {
+                    showForm ?
+                        <FormCardContent selectedNode={selectedNode} handleShowForm={handleShowForm}
+                                         handleModal={handleModal} family={family}
+                                         query={treeQuery} isEditing={isEditing}
+                                         handleIsEditing={handleIsEditing}/> :
+                        <InfoCardContent selectedNode={selectedNode}/>
+                }
+                <CardActions>
+                    {
+                        !showForm && <>
+                            <Button variant={"soft"} startIcon={<Add/>} onClick={handleShowForm} fullWidth>
+                                Add Children
+                            </Button>
+                            {
+                                selectedNode && <>
+                                    <Button variant={"soft"} color={"info"} startIcon={<Edit/>}
+                                            onClick={handleEdit} fullWidth>Edit</Button>
+                                    <Button variant={"soft"} color={"error"} startIcon={<Delete/>}
+                                            onClick={handleDelete} fullWidth>Delete</Button>
+                                </>
+                            }
+                        </>
+                    }
+
+                </CardActions>
+            </Card>
+        </Modal>
+    )
+
+}
+
+
 const FormCardContent = ({selectedNode, handleShowForm, handleModal, family, query, isEditing, handleIsEditing}) => {
     const [avatarFile, setAvatarFile] = useState("")
     const [data, setData] = useState({
@@ -185,7 +211,6 @@ const FormCardContent = ({selectedNode, handleShowForm, handleModal, family, que
         }
     }
 
-
     useEffect(() => {
         if (isEditing) {
             setData({
@@ -196,10 +221,11 @@ const FormCardContent = ({selectedNode, handleShowForm, handleModal, family, que
                 date_of_death: selectedNode?.date_of_death || "",
                 parent: selectedNode?.parent || ""
             });
-            setAvatarFile(selectedNode?.avatar || null)
+            setAvatarFile(selectedNode?.avatar || "")
         }
 
     }, [family, selectedNode]);
+
     return (
         <CardContent>
             <form onSubmit={handleSubmit}>
@@ -231,26 +257,56 @@ const FormCardContent = ({selectedNode, handleShowForm, handleModal, family, que
                            fullWidth
                            required
                 />
+                {
+                    data?.date_of_birth ? <DatePicker label={"Date of Birth"}
+                                            name={"date_of_birth"}
+                                            sx={{mb: 2, width: "100%"}}
+                                            value={dayjs(data?.date_of_birth)}
+                                            onChange={(newValue) => setData(prevState => ({
+                                                ...prevState,
+                                                date_of_birth: formatDateForDjango(newValue, {
+                                                    showTime: false,
+                                                    useMidnight: false
+                                                })
+                                            }))}
+                        /> :
+                        <DatePicker label={"Date of Birth"}
+                                    name={"date_of_birth"}
+                                    sx={{mb: 2, width: "100%"}}
+                                    onChange={(newValue) => setData(prevState => ({
+                                        ...prevState,
+                                        date_of_birth: formatDateForDjango(newValue, {
+                                            showTime: false,
+                                            useMidnight: false
+                                        })
+                                    }))}
+                        />
+                }
+                {
+                    data?.date_of_death ? <DatePicker label={"Date of Death"}
+                                            name={"date_of_death"}
+                                            sx={{mb: 2, width: "100%"}}
+                                            onChange={(newValue) => setData(prevState => ({
+                                                ...prevState,
+                                                date_of_death: formatDateForDjango(newValue, {
+                                                    showTime: false,
+                                                    useMidnight: false
+                                                })
+                                            }))}
+                        /> :
+                        <DatePicker label={"Date of Death"}
+                                    name={"date_of_death"}
+                                    sx={{mb: 2, width: "100%"}}
+                                    onChange={(newValue) => setData(prevState => ({
+                                        ...prevState,
+                                        date_of_death: formatDateForDjango(newValue, {
+                                            showTime: false,
+                                            useMidnight: false
+                                        })
+                                    }))}
+                        />
+                }
 
-                <DatePicker label={"Date of Birth"}
-                            name={"date_of_birth"}
-                            sx={{mb: 2, width: "100%"}}
-                            defaultValue={dayjs(selectedNode?.date_of_birth)}
-                            onChange={(newValue) => setData(prevState => ({
-                                ...prevState,
-                                date_of_birth: formatDateForDjango(newValue, {showTime: false, useMidnight: false})
-                            }))}
-                />
-                <DatePicker label={"Date of Death"}
-                            name={"date_of_death"}
-                            sx={{mb: 2, width: "100%"}}
-                            defaultValue={dayjs(selectedNode?.date_of_death)}
-
-                            onChange={(newValue) => setData(prevState => ({
-                                ...prevState,
-                                date_of_death: formatDateForDjango(newValue, {showTime: false, useMidnight: false})
-                            }))}
-                />
                 <Box display={"flex"} gap={1}>
                     <Button variant={"soft"} fullWidth type={"submit"} role={"button"}>
                         Submit

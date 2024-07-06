@@ -1,13 +1,14 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import User
+from .models import User, Relation
 
 
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
     model = User
     list_display = (
-        "id", "username", "email", "is_staff", "is_superuser", "is_active", "date_joined",
+        "id", "username", "email", "is_staff", "is_superuser", "is_active", "email_verified", "date_joined",
         "last_login")
     list_filter = ("is_staff", "is_active", "groups")
     readonly_fields = ("date_joined", "last_login", "last_ip")
@@ -30,4 +31,7 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("id",)
 
 
-admin.site.register(User, CustomUserAdmin)
+@admin.register(Relation)
+class RelationAdmin(admin.ModelAdmin):
+    list_display = ("pk", "user", "related", "relation", "created_at", "updated_at", "is_active",)
+    list_filter = ("created_at", "updated_at", "is_active",)

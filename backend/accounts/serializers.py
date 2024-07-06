@@ -6,7 +6,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 
-from .models import User
+from .models import User, Relation
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -59,6 +59,12 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return obj.get_full_name
+
+
+class RelationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Relation
+        fields = ['pk', 'user', 'related', 'relation', 'is_active']
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

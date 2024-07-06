@@ -1,22 +1,30 @@
 import {
-    Avatar, Badge,
+    Avatar,
+    Badge,
     Card,
     IconButton,
     List,
     ListItem,
-    ListItemAvatar, ListItemIcon,
+    ListItemAvatar,
+    ListItemIcon,
     ListItemSecondaryAction,
-    ListItemText, Menu, MenuItem
+    ListItemText,
+    Menu,
+    MenuItem
 } from "@mui/material";
-import {Chat, MoreVert, Person, Star, SupervisorAccount} from "@mui/icons-material";
-import {useState} from "react";
-import {useUser} from "@lib/hooks/useUser.jsx";
+import {Chat, Lan, MoreVert, Person, Star, SupervisorAccount} from "@mui/icons-material";
+import {useEffect, useState} from "react";
+import {useRelations, useUser} from "@lib/hooks/useUser.jsx";
 import {groupService} from "@lib/services/familyService.js";
 import {handleError} from "@lib/utils/service.js";
 import toast from "react-hot-toast";
 import {isAdmin, isCreator} from "@lib/utils/family.js";
+import RelationModal from "@components/Relations/RelationModal.jsx";
+import {findRelationByMemberId} from "@lib/utils/relations.js";
 
 const FamilyMembers = ({family, query}) => {
+    const [relations, setRelations] = useRelations()
+    const [showRelationModal, setShowRelationModal] = useState(false)
     const [user, _] = useUser()
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedMember, setSelectedMember] = useState(null);
@@ -28,38 +36,56 @@ const FamilyMembers = ({family, query}) => {
         setAnchorEl(null);
     };
 
+    const handleRelationModal = () => {
+        setShowRelationModal(prevState => !prevState)
+    }
+
+    const handleName = (member) => {
+        const myRelation = findRelationByMemberId(relations, member.id)
+        return myRelation ? member.full_name + `(${myRelation.relation})` : member.full_name
+    }
+
+    useEffect(() => {
+        console.log("Relations updated in members:", relations);
+    }, [relations]);
+
 
     return (
         <Card>
-            <List sx={{maxHeight:"300px",overflowY:"auto"}}>
-                {query?.data?.members?.map((member, index) =>
-                    <ListItem key={index}>
-                        <ListItemAvatar>
-                            <Badge
-                                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-                                overlap={"circular"}
-                                badgeContent={
-                                    isCreator(member, query) ? <Star sx={{color: "warning.light"}}/>
-                                        : isAdmin(member, query) ? <Star color={"info"}/> : null
-                                }>
-                                <Avatar src={member?.avatar}
-                                        alt={member?.full_name}>
-                                    {member?.initial_name?.toUpperCase()}
-                                </Avatar>
-                            </Badge>
-                        </ListItemAvatar>
-                        <ListItemText primary={member?.id === user?.id ? "You" : member?.full_name}
-                                      secondary={isCreator(member, query) ? "Creator" : isAdmin(member, query) ? "Admin" : "Member"}
-                        />
-                        {
-                            member?.id !== user?.id && <ListItemSecondaryAction>
-                                <IconButton onClick={(e) => handleMenu(e, member)}>
-                                    <MoreVert/>
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        }
+            <List sx={{maxHeight: "300px", overflowY: "auto"}}>
+                {query?.data?.members?.map((member, index) => {
 
-                    </ListItem>
+
+                        return (
+                            <ListItem key={index}>
+                                <ListItemAvatar>
+                                    <Badge
+                                        anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                                        overlap={"circular"}
+                                        badgeContent={
+                                            isCreator(member, query) ? <Star sx={{color: "warning.light"}}/>
+                                                : isAdmin(member, query) ? <Star color={"info"}/> : null
+                                        }>
+                                        <Avatar src={member?.avatar}
+                                                alt={member?.full_name}>
+                                            {member?.initial_name?.toUpperCase()}
+                                        </Avatar>
+                                    </Badge>
+                                </ListItemAvatar>
+                                <ListItemText primary={member?.id === user?.id ? "You" : handleName(member)}
+                                              secondary={isCreator(member, query) ? "Creator" : isAdmin(member, query) ? "Admin" : "Member"}
+                                />
+                                {
+                                    member?.id !== user?.id && <ListItemSecondaryAction>
+                                        <IconButton onClick={(e) => handleMenu(e, member)}>
+                                            <MoreVert/>
+                                        </IconButton>
+                                    </ListItemSecondaryAction>
+                                }
+
+                            </ListItem>
+                        )
+                    }
                 )}
 
             </List>
@@ -105,10 +131,18 @@ const FamilyMembers = ({family, query}) => {
                         </ListItemIcon>
                         Send Message
                     </MenuItem>,
-                    <ExtraMenuItems key={2} family={family} query={query} user={user}
+                    <MenuItem key={2} onClick={handleRelationModal}>
+                        <ListItemIcon>
+                            <Lan/>
+                        </ListItemIcon>
+                        Relation
+                    </MenuItem>,
+                    <ExtraMenuItems key={3} family={family} query={query} user={user}
                                     selectedMember={selectedMember}/>
                 ]}
             </Menu>
+            <RelationModal relations={relations} setRelations={setRelations} member={selectedMember}
+                           showModal={showRelationModal} handleModal={handleRelationModal}/>
         </Card>
     )
 }
@@ -122,7 +156,7 @@ const ExtraMenuItems = ({family, query, user, selectedMember}) => {
             member: selectedMember.id
         })
         try {
-            const {message} =await groupService(family, prepData)
+            const {message} = await groupService(family, prepData)
             query.refetch()
             toast.success(message)
         } catch (error) {
@@ -132,8 +166,8 @@ const ExtraMenuItems = ({family, query, user, selectedMember}) => {
     }
 
 
-    if (isCreator(user,query)) {
-        if (!isAdmin(selectedMember,query) && !isCreator(selectedMember,query)) {
+    if (isCreator(user, query)) {
+        if (!isAdmin(selectedMember, query) && !isCreator(selectedMember, query)) {
             return (
                 <MenuItem onClick={() => handleGroupPermission("promote", "admin")}>
                     <ListItemIcon>
@@ -142,7 +176,7 @@ const ExtraMenuItems = ({family, query, user, selectedMember}) => {
                     Make admin
                 </MenuItem>
             )
-        } else if (isAdmin(selectedMember,query)) {
+        } else if (isAdmin(selectedMember, query)) {
             return (
                 <MenuItem onClick={() => handleGroupPermission("demote", "admin")}>
                     <ListItemIcon>

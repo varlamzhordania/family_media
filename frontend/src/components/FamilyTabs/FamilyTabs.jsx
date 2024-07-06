@@ -18,8 +18,7 @@ const FamilyTabs = ({family, query}) => {
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                     <Tab label="Feeds" {...a11yProps(0)} />
-                    <Tab label="Gallery" {...a11yProps(1)} />
-                    <Tab label="Tree" {...a11yProps(2)} />
+                    <Tab label="Tree" {...a11yProps(1)} />
                     {
                         query?.data?.creator === user.id && <Tab label="Settings" {...a11yProps(3)} />
                     }
@@ -30,14 +29,11 @@ const FamilyTabs = ({family, query}) => {
                 <FamilyFeeds/>
             </CustomTabPanel>
             <CustomTabPanel value={value} index={1}>
-                Gallery
-            </CustomTabPanel>
-            <CustomTabPanel value={value} index={2}>
                 <FamilyTree family={family} query={query}/>
             </CustomTabPanel>
             {
                 query?.data?.creator === user.id &&
-                <CustomTabPanel value={value} index={3}>
+                <CustomTabPanel value={value} index={2}>
                     <FamilySettings family={family} query={query}/>
                 </CustomTabPanel>
             }

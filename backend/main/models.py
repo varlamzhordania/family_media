@@ -146,35 +146,3 @@ class FamilyTree(MPTTModel):
         return self.name
 
 
-class FamilyRelation(BaseModel):
-    from_member = models.ForeignKey(
-        FamilyMembers,
-        verbose_name=_("Who am i"),
-        on_delete=models.CASCADE,
-        related_name='from_relations',
-        blank=False,
-        null=False,
-    )
-    to_member = models.ForeignKey(
-        FamilyMembers,
-        verbose_name=_("who is it?"),
-        on_delete=models.CASCADE,
-        related_name='to_relations',
-        blank=False,
-        null=False,
-    )
-    relation = models.CharField(
-        max_length=64,
-        verbose_name=_("Relation"),
-        blank=True,
-        null=True,
-        default=_("Unknown"),
-    )
-
-    class Meta:
-        verbose_name = _("Family Relation")
-        verbose_name_plural = _("Family Relations")
-        unique_together = ('from_member', 'to_member', 'relation')
-
-    def __str__(self):
-        return f"{self.from_member} - {self.to_member} ({self.relation})"

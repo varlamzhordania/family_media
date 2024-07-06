@@ -1,7 +1,7 @@
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 
-from .models import Family, FamilyMembers, FamilyTree, FamilyRelation
+from .models import Family, FamilyMembers, FamilyTree
 
 
 # Register your models here.
@@ -36,8 +36,3 @@ class FamilyMembersAdmin(admin.ModelAdmin):
     list_filter = ("created_at", "updated_at", "is_active",)
     search_fields = ("pk", "family")
 
-
-@admin.register(FamilyRelation)
-class FamilyRelationAdmin(admin.ModelAdmin):
-    list_display = ("pk", "from_member", "to_member", "relation", "created_at", "updated_at", "is_active",)
-    list_filter = ("created_at", "updated_at", "is_active",)

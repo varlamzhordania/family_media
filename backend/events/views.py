@@ -10,12 +10,16 @@ from django.core.mail import send_mail
 from django.utils.translation import gettext as _
 from django.conf import settings
 from django.utils import timezone
+from django.db import transaction
+from drf_spectacular.utils import extend_schema
 
 from main.models import Family, FamilyMembers
+
 from .models import Event, Invitation
 from .serializers import EventSerializer
 
 
+@extend_schema(tags=["Events"])
 class EventViewSet(ModelViewSet):
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
@@ -40,9 +44,11 @@ class EventViewSet(ModelViewSet):
         return obj
 
 
+@extend_schema(tags=["Events"])
 class InvitationView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic
     def get(self, request: Request, format=None, *args, **kwargs) -> Response:
         try:
             user = request.user
@@ -75,6 +81,7 @@ class InvitationView(APIView):
             print(str(e))
             return Response({"detail": f"An unexpected error occurred"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @transaction.atomic
     def post(self, request: Request, format=None, *args, **kwargs) -> Response:
         user = request.user
         data = request.data.copy()

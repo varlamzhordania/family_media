@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils.timesince import timesince
 
-from .models import Family, FamilyMembers, FamilyRelation, FamilyTree
+from .models import Family, FamilyMembers, FamilyTree
 
 from accounts.serializers import PublicUserSerializer
 
@@ -27,15 +27,9 @@ class FamilyMembersSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class FamilyRelationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FamilyRelation
-        fields = '__all__'
-
-
 class RecursiveField(serializers.Serializer):
     def to_representation(self, data):
-        return FamilyTreeSerializer(data,context=self.context).data
+        return FamilyTreeSerializer(data, context=self.context).data
 
 
 class FamilyTreeSerializer(serializers.ModelSerializer):

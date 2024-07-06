@@ -1,4 +1,4 @@
-import {useMemberships} from "@lib/hooks/useUser.jsx";
+import {useMemberships, useRelations} from "@lib/hooks/useUser.jsx";
 import {useEffect, useRef, useState} from "react";
 import {likeService} from "@lib/services/postService.js";
 import {
@@ -18,11 +18,13 @@ import {Favorite, FavoriteBorder, ModeCommentOutlined, NavigateBefore, NavigateN
 import EmptyImage from "@public/empty.svg";
 import {register} from 'swiper/element/bundle';
 import VideoPlayer from "@components/VideoPlayer/VideoPlayer.jsx";
+import {findRelationByMemberId} from "@lib/utils/relations.js";
 
 register();
 
 
 export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
+    const [relations, setRelations] = useRelations()
     const [memberShips, _] = useMemberships()
     const [liked, setLiked] = useState(false)
     const [likeCounter, setLikeCounter] = useState(0)
@@ -49,6 +51,13 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
         const membershipIds = memberShips.map(member => member.id);
         return likesUser.some(userId => membershipIds.includes(userId));
     };
+
+
+    const handleName = (member) => {
+        const myRelation = findRelationByMemberId(relations, member.id)
+        return myRelation ? member.full_name + `(${myRelation.relation})` : member.full_name
+    }
+
     const handleLike = async () => {
         if (liked) {
             // it means dislike
@@ -108,47 +117,49 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
         <Card key={data?.id} sx={{overflow: "visible"}}>
             <CardHeader
                 avatar={<Avatar>{data?.author?.member?.initial_name?.toUpperCase()}</Avatar>}
-                title={data?.author?.member?.full_name}
+                title={handleName(data?.author?.member)}
                 subheader={getFormattedDate(data?.created_at, {showDate: true, showTime: true})}/>
-            <Box sx={{position: "relative", height: swiperWrapperHeight,}}>
-                <swiper-container ref={swiperRef} slides-per-view="1"
-                                  pagination="true"
-                >
-                    {data?.medias?.map((item, index) =>
-                        <swiper-slide key={index}>
-                            {
-                                getComponent(item.file) === "img" ? <CardMedia
-                                    sx={{
-                                        height: swiperWrapperHeight,
-                                        objectFit: "contain",
-                                        backgroundColor: "#222"
-                                    }}
-                                    component={getComponent(item.file)}
+            {
+                data?.medias?.length > 0 && <Box sx={{position: "relative", height: swiperWrapperHeight,}}>
+                    <swiper-container ref={swiperRef} slides-per-view="1"
+                                      pagination="true"
+                    >
+                        {data?.medias?.map((item, index) =>
+                            <swiper-slide key={index}>
+                                {
+                                    getComponent(item.file) === "img" ? <CardMedia
+                                        sx={{
+                                            height: swiperWrapperHeight,
+                                            objectFit: "contain",
+                                            backgroundColor: "#222"
+                                        }}
+                                        component={getComponent(item.file)}
 
-                                    play={"false"}
-                                    loading="lazy"
-                                    src={item.file || "/default-picture.png"}
-                                /> : <VideoPlayer src={item.file} cardStyle={swiperWrapperHeight}/>
-                            }
-                        </swiper-slide>
-                    )}
-                </swiper-container>
-                <Box sx={{
-                    position: "relative",
-                    top: "-50%",
-                    margin: "auto",
-                    zIndex: 1001,
-                }}>
-                    <IconButton variant="soft" sx={{...swiperBtnStyle, right: {xs: 5, md: -20},}}
-                                onClick={handleSlideNext}>
-                        <NavigateNext fontSize={"large"}/>
-                    </IconButton>
-                    <IconButton variant="soft" sx={{...swiperBtnStyle, left: {xs: 5, md: -20},}}
-                                onClick={handleSlidePrev}>
-                        <NavigateBefore fontSize={"large"}/>
-                    </IconButton>
+                                        play={"false"}
+                                        loading="lazy"
+                                        src={item.file || "/default-picture.png"}
+                                    /> : <VideoPlayer src={item.file} cardStyle={swiperWrapperHeight}/>
+                                }
+                            </swiper-slide>
+                        )}
+                    </swiper-container>
+                    <Box sx={{
+                        position: "relative",
+                        top: "-50%",
+                        margin: "auto",
+                        zIndex: 1001,
+                    }}>
+                        <IconButton variant="soft" sx={{...swiperBtnStyle, right: {xs: 5, md: -20},}}
+                                    onClick={handleSlideNext}>
+                            <NavigateNext fontSize={"large"}/>
+                        </IconButton>
+                        <IconButton variant="soft" sx={{...swiperBtnStyle, left: {xs: 5, md: -20},}}
+                                    onClick={handleSlidePrev}>
+                            <NavigateBefore fontSize={"large"}/>
+                        </IconButton>
+                    </Box>
                 </Box>
-            </Box>
+            }
             <CardContent>
 
                 <Box sx={{

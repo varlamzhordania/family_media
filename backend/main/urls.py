@@ -2,6 +2,7 @@ from django.urls import path
 from .views import FamilyView, ListJoinFamilyView, RetrieveUpdateLeaveFamilyView, InviteView, FamilyGroupsView, \
     FamilyTreeView
 
+
 app_name = 'main'
 
 urlpatterns = [
