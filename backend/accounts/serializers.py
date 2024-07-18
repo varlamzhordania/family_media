@@ -52,7 +52,7 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'avatar', 'initial_name', 'full_name']
+        fields = ['id', 'avatar', 'initial_name', 'full_name', 'is_online']
 
     def get_initial_name(self, obj):
         return obj.get_initials_name

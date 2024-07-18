@@ -8,16 +8,17 @@ from .models import User, Relation
 class CustomUserAdmin(UserAdmin):
     model = User
     list_display = (
-        "id", "username", "email", "is_staff", "is_superuser", "is_active", "email_verified", "date_joined",
+        "id", "username", "email", "is_staff", "is_superuser", "is_active", "is_online", "email_verified",
+        "date_joined",
         "last_login")
-    list_filter = ("is_staff", "is_active", "groups")
+    list_filter = ("is_online", "email_verified", "is_staff", "is_active", "groups")
     readonly_fields = ("date_joined", "last_login", "last_ip")
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         ("Personal Information",
          {"fields": ("first_name", "last_name", "email", "phone_number", "bio", "avatar", "bg_cover")}),
         ("Permissions", {"fields": ("is_staff", "is_superuser", "is_active", "groups", "user_permissions")}),
-        ("Security", {"fields": ("email_verified", "date_joined", "last_login", "last_ip")}),
+        ("Security", {"fields": ("is_online", "email_verified", "date_joined", "last_login", "last_ip")}),
     )
     add_fieldsets = (
         (None, {

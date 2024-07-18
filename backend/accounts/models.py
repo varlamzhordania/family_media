@@ -51,6 +51,7 @@ class User(AbstractUser):
     phone_number = PhoneNumberField(blank=True, null=True, verbose_name=_("Phone Number"))
     last_ip = models.GenericIPAddressField(verbose_name=_("Last IP Address"), null=True, blank=True)
     email_verified = models.BooleanField(verbose_name=_("Email verified"), default=False)
+    is_online = models.BooleanField(verbose_name=_("Online"), default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()

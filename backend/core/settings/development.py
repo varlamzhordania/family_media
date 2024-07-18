@@ -7,6 +7,7 @@ DEFAULTS['ACCESS_TOKEN_EXPIRE_SECONDS'] = 1.577e7
 FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 Mb limit
 
 ALLOWED_HOSTS = ["*"]
+SERVER_NAME = "127.0.0.1"
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -24,6 +25,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
 

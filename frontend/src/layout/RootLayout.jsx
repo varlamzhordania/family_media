@@ -1,5 +1,4 @@
 import CssBaseline from "@mui/material/CssBaseline";
-import React from "react";
 import {ColorModeContext, useMode} from "@lib/theme/theme.js";
 import {ThemeProvider} from "@mui/material";
 import {Toaster} from "react-hot-toast";
@@ -10,7 +9,6 @@ const RootLayout = ({children}) => {
     const [theme, colorMode] = useMode();
 
     return (
-        <React.Fragment>
             <ColorModeContext.Provider value={colorMode}>
                 <ThemeProvider theme={theme}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -20,7 +18,6 @@ const RootLayout = ({children}) => {
                     </LocalizationProvider>
                 </ThemeProvider>
             </ColorModeContext.Provider>
-        </React.Fragment>
     )
 }
 

@@ -14,7 +14,7 @@ export const routes = [
     {
         title: "Messages",
         icon: <Forum/>,
-        href: "/",
+        href: "/message/",
     },
     {
         title: "Account",

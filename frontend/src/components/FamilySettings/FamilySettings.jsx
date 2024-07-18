@@ -1,10 +1,10 @@
 import {Box, Button, Card, CardContent, Skeleton, TextField} from "@mui/material";
-import {useUser} from "@lib/hooks/useUser.jsx";
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {patchService} from "@lib/services/familyService.js";
 import {handleError} from "@lib/utils/service.js";
 import toast from "react-hot-toast";
+import {useUserContext} from "@lib/context/UserContext.jsx";
 
 const FamilySettings = ({family, query}) => {
     const [data, setData] = useState({
@@ -13,7 +13,7 @@ const FamilySettings = ({family, query}) => {
         description: "",
 
     })
-    const [user, _] = useUser()
+    const {user} = useUserContext()
     const navigate = useNavigate()
 
     const handleChange = (e) => {

@@ -1,4 +1,3 @@
-import {useMemberships, useRelations} from "@lib/hooks/useUser.jsx";
 import {useEffect, useRef, useState} from "react";
 import {likeService} from "@lib/services/postService.js";
 import {
@@ -19,13 +18,15 @@ import EmptyImage from "@public/empty.svg";
 import {register} from 'swiper/element/bundle';
 import VideoPlayer from "@components/VideoPlayer/VideoPlayer.jsx";
 import {findRelationByMemberId} from "@lib/utils/relations.js";
+import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
+import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
 
 register();
 
 
 export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
-    const [relations, setRelations] = useRelations()
-    const [memberShips, _] = useMemberships()
+    const {relations} = useRelationsContext()
+    const {memberShips} = useMembershipsContext()
     const [liked, setLiked] = useState(false)
     const [likeCounter, setLikeCounter] = useState(0)
     const swiperRef = useRef(null)
@@ -48,8 +49,8 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
     }
     const getLikeStatus = () => {
         const likesUser = data?.likes?.users || [];
-        const membershipIds = memberShips.map(member => member.id);
-        return likesUser.some(userId => membershipIds.includes(userId));
+        const membershipIds = memberShips?.map(member => member?.id);
+        return likesUser.some(userId => membershipIds?.includes(userId));
     };
 
 

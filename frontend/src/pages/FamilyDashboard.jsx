@@ -24,9 +24,9 @@ import BackLink from "@components/BackLink/BackLink.jsx";
 import FamilyEvents from "@components/FamilyEvents/FamilyEvents.jsx";
 import FamilyCode from "@components/FamilyCode/FamilyCode.jsx";
 import FamilyMembers from "@components/FamilyMemebrs/FamilyMembers.jsx";
-import {useUser} from "@lib/hooks/useUser.jsx";
 import {havePermission} from "@lib/utils/family.js";
 import {handleError} from "@lib/utils/service.js";
+import {useUserContext} from "@lib/context/UserContext.jsx";
 
 const bgImage = "/bg_cover_compress.jpg"
 const FamilyDashboard = () => {
@@ -74,7 +74,7 @@ const FamilyDashboard = () => {
 }
 
 const CardCover = ({query}) => {
-    const [user, _] = useUser()
+    const {user}= useUserContext()
     const [bgCover, setBgCover] = useState(bgImage)
     const [avatarImage, setAvatarImage] = useState(null)
 

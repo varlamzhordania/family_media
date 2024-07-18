@@ -10,7 +10,6 @@ import {
     IconButton, Paper, TextField,
     Typography
 } from "@mui/material";
-import {useUser} from "@lib/hooks/useUser.jsx";
 import {Edit, PhotoCameraRounded} from "@mui/icons-material";
 import VisuallyHiddenInput from "@components/VisuallyHiddenInput/VisuallyHiddenInput.jsx";
 import {useEffect, useRef, useState} from "react";
@@ -18,6 +17,7 @@ import {userPatchService} from "@lib/services/userServices.js";
 import toast from "react-hot-toast";
 import {MuiTelInput} from "mui-tel-input";
 import {handleError} from "@lib/utils/service.js";
+import {useUserContext} from "@lib/context/UserContext.jsx";
 
 
 const bgImage = "/bg_cover_compress.jpg"
@@ -43,7 +43,7 @@ const Account = () => {
 }
 
 const CardForms = () => {
-    const [user, setUser] = useUser()
+    const {user} = useUserContext()
     const [data, setData] = useState({
         username: {
             value: "",
@@ -162,7 +162,7 @@ const CardForms = () => {
 
 
 const TableItem = ({data, dataField, setData}) => {
-    const [user, setUser] = useUser()
+    const {user, setUser} = useUserContext()
     const myRef = useRef(null)
 
     const handleChange = (e) => {
@@ -270,7 +270,7 @@ const TableItem = ({data, dataField, setData}) => {
 
 
 const CardCover = () => {
-    const [user, setUser] = useUser()
+    const {user, setUser} = useUserContext()
     const [bgCover, setBgCover] = useState(bgImage)
     const [avatarImage, setAvatarImage] = useState(null)
 

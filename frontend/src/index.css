@@ -1,5 +1,10 @@
 
-body{
+* {
+    scroll-behavior: smooth;
+}
+
+
+body {
     overflow-x: hidden;
 }
 
@@ -32,8 +37,22 @@ body{
 
 
 swiper-container::part(bullet) {
-  background-color: #009688;
+    background-color: #009688;
 }
+
 swiper-container::part(bullet-active) {
-  background-color: #009688;
+    background-color: #009688;
+}
+
+
+.chat-message {
+    transition: transform 0.3s ease;
+    cursor: grab;
+}
+.chat-message.swiping {
+    cursor: grabbing;
+}
+
+.chat-message.swiping.left {
+    transform: translateX(-100px);
 }

@@ -14,20 +14,23 @@ import {
 } from "@mui/material";
 import {Chat, Lan, MoreVert, Person, Star, SupervisorAccount} from "@mui/icons-material";
 import {useEffect, useState} from "react";
-import {useRelations, useUser} from "@lib/hooks/useUser.jsx";
 import {groupService} from "@lib/services/familyService.js";
 import {handleError} from "@lib/utils/service.js";
 import toast from "react-hot-toast";
 import {isAdmin, isCreator} from "@lib/utils/family.js";
 import RelationModal from "@components/Relations/RelationModal.jsx";
 import {findRelationByMemberId} from "@lib/utils/relations.js";
+import {useUserContext} from "@lib/context/UserContext.jsx";
+import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
+import {useNavigate} from "react-router-dom";
 
 const FamilyMembers = ({family, query}) => {
-    const [relations, setRelations] = useRelations()
+    const {relations, setRelations} = useRelationsContext()
     const [showRelationModal, setShowRelationModal] = useState(false)
-    const [user, _] = useUser()
+    const {user} = useUserContext()
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedMember, setSelectedMember] = useState(null);
+    const navigate = useNavigate()
     const handleMenu = (event, member) => {
         setAnchorEl(event.currentTarget);
         setSelectedMember(member);
@@ -40,14 +43,15 @@ const FamilyMembers = ({family, query}) => {
         setShowRelationModal(prevState => !prevState)
     }
 
+    const handleDm = () => {
+        console.log(selectedMember)
+        navigate(`/message/?dm=${selectedMember.id}`)
+    }
+
     const handleName = (member) => {
         const myRelation = findRelationByMemberId(relations, member.id)
         return myRelation ? member.full_name + `(${myRelation.relation})` : member.full_name
     }
-
-    useEffect(() => {
-        console.log("Relations updated in members:", relations);
-    }, [relations]);
 
 
     return (
@@ -125,11 +129,11 @@ const FamilyMembers = ({family, query}) => {
                 onClose={handleClose}
             >
                 {selectedMember?.id !== user?.id && [
-                    <MenuItem key={1}>
+                    <MenuItem key={1} onClick={handleDm}>
                         <ListItemIcon>
                             <Chat/>
                         </ListItemIcon>
-                        Send Message
+                        Direct Message
                     </MenuItem>,
                     <MenuItem key={2} onClick={handleRelationModal}>
                         <ListItemIcon>

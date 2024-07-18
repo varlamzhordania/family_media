@@ -106,10 +106,12 @@ class RetrieveUpdateLeaveFamilyView(APIView):
         if not family.members.filter(id=user.id).exists():
             return Response({"error": "You are not a member of this family."}, status=status.HTTP_400_BAD_REQUEST)
 
-        family.members.remove(user)
-        family.save()
-
-        return Response({"message": f"You left the {family.name} family."}, status=status.HTTP_204_NO_CONTENT)
+        if family.creator == request.user:
+            family.delete()
+            return Response({"message": f"{family.name} disbanded."}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            family.members.remove(user)
+            return Response({"message": f"You left the {family.name} family."}, status=status.HTTP_204_NO_CONTENT)
 
 
 @extend_schema(tags=['Family'])

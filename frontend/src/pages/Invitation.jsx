@@ -5,12 +5,13 @@ import {useEffect, useState} from "react";
 import {handleError} from "@lib/utils/service.js";
 import {checkInvitationService} from "@lib/services/eventsService.js";
 import toast from "react-hot-toast";
+import {useWebSocketContext} from "@lib/context/WebSocketContext.jsx";
 
 const Invitation = () => {
     const {code} = useParams()
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
-
+    const {sendJsonMessage} = useWebSocketContext()
 
     useEffect(() => {
         const handleCode = async () => {
@@ -20,6 +21,7 @@ const Invitation = () => {
                 toast.success(response?.message)
                 navigate(`/family/${response.family_id}/`)
                 setLoading(false)
+                sendJsonMessage({action: "pull_rooms"})
 
             } catch (error) {
                 handleError(error)

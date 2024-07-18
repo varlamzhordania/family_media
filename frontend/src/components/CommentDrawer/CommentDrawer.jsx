@@ -2,7 +2,7 @@ import {
     Avatar, Box,
     Card,
     CardContent, CardHeader,
-    Drawer, IconButton,
+    Drawer, IconButton, InputAdornment,
     List,
     ListItem,
     ListItemText,
@@ -12,18 +12,23 @@ import {
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {createService, listService} from "@lib/services/commentService.js";
 import {getFormattedDate} from "@lib/utils/times.js";
-import {useRef} from "react";
-import {Send} from "@mui/icons-material";
+import {useEffect, useRef, useState} from "react";
+import {EmojiEmotions, Send,} from "@mui/icons-material";
 import toast from "react-hot-toast";
-import {useUser} from "@lib/hooks/useUser.jsx";
 import {handleError} from "@lib/utils/service.js";
+import EmojiPicker from "emoji-picker-react";
+import {HorizontalStyle} from "@lib/theme/styles.js";
+import {useUserContext} from "@lib/context/UserContext.jsx";
 
 const CommentDrawer = ({handleDrawer, showDrawer, selectedPost}) => {
+
 
     const commentsQuery = useQuery({
         queryKey: ['comments', selectedPost],
         queryFn: () => listService(selectedPost)
     })
+
+
     return (
         <Drawer
             open={showDrawer}
@@ -53,24 +58,52 @@ const CommentDrawer = ({handleDrawer, showDrawer, selectedPost}) => {
     )
 }
 
-const Form = ({id}) => {
-    const [user, _] = useUser()
-    const inputRef = useRef()
+const Form = ({id,}) => {
+    const [showEmoji, setShowEmoji] = useState(false)
+    const {user} = useUserContext()
+    const [data, setData] = useState({
+        text: ""
+    })
+    const emojiPickerRef = useRef(null);
     const queryClient = useQueryClient()
+
+
+    const handleShowEmoji = () => {
+        setShowEmoji(prevState => !prevState)
+    }
+
+
+    const handleClickOutside = (e) => {
+        if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target)) {
+            setShowEmoji(false);
+        }
+    };
+
+
+    const handleChange = (e) => {
+        const {name, value} = e.target
+        setData(prevState => ({...prevState, [name]: value}))
+    }
+
+    const onEmojiClick = (emojiObject) => {
+        setData(prevState => ({
+            ...prevState,
+            text: prevState.text + emojiObject.emoji
+        }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const text = inputRef.current.value
-        if (text === null || text.strip === "")
+        if (data.text === null || data.text.strip === "")
             toast.error("Please Make Sure you have entered your comment correctly")
 
         try {
             const prepData = {
                 post_id: id,
-                text: text,
+                text: data.text,
             }
             await createService(JSON.stringify(prepData))
-            inputRef.current.value = ""
+            setData({text: ""})
             toast.success("Have submitted a new comment.")
             queryClient.refetchQueries({queryKey: ["comments", id]})
 
@@ -79,32 +112,58 @@ const Form = ({id}) => {
         }
     }
 
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
 
     return (
         <ListItem>
-            <Card variant={"outlined"} sx={{width: "100%"}}>
+            <Card variant={"outlined"} sx={{width: "100%", overflow: "visible"}}>
                 <CardContent sx={{paddingBottom: "16px !important"}}>
                     <form onSubmit={handleSubmit}>
                         <Box sx={{
-                            display: "flex",
+                            ...HorizontalStyle,
+                            position: "relative",
                             flexWrap: "nowrap",
                             gap: 1,
-                            justifyContent: "space-between",
                             alignItems: "start",
+
                         }}>
                             <Avatar src={user?.avatar} alt={user?.initial_name}/>
-                            <TextField inputRef={inputRef}
-                                       variant={"outlined"}
-                                       fullWidth
-                                       multiline
-                                       inputMode={"text"}
-                                       type={"text"}
-                                       placeholder={"Write a comment..."}
-                                       required
+                            <TextField
+                                type={"text"}
+                                name={"text"}
+                                value={data.text}
+                                onChange={handleChange}
+                                placeholder={"Write a comment..."}
+                                InputProps={{
+                                    endAdornment:
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={handleShowEmoji}>
+                                                <EmojiEmotions/>
+                                            </IconButton>
+                                        </InputAdornment>
+                                }}
+                                multiline
+                                fullWidth
+                                required
                             />
-                            <IconButton size={"medium"} type={"submit"} role={"button"}>
+                            <IconButton size={"medium"} type={"submit"}>
                                 <Send/>
                             </IconButton>
+                            <Box sx={{
+                                position: "absolute",
+                                top: "120%",
+                                right: 50,
+                            }}
+                                 ref={emojiPickerRef}
+                            >
+                                <EmojiPicker open={showEmoji} onEmojiClick={onEmojiClick}/>
+                            </Box>
                         </Box>
                     </form>
                 </CardContent>
@@ -141,7 +200,7 @@ const CommentItem = ({data}) => {
 const CommentSkeleton = () => {
     return Array.from(Array(10)).map((item, index) => (
             <ListItem key={index}>
-                <Card elevation={"z8"} sx={{width: "100%"}}>
+                <Card sx={{width: "100%"}}>
                     <CardHeader
                         avatar={<Skeleton variant={"circular"} width={45} height={45}/>}
                         title={<Skeleton variant={"text"} width={300}/>}/>

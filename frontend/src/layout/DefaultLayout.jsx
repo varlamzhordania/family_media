@@ -1,49 +1,56 @@
-import RootLayout from "./RootLayout.jsx";
+import {useEffect, useMemo} from "react";
 import SideNavigation from "@components/Navigation/SideNavigation.jsx";
 import {Container, Grid} from "@mui/material";
 import Navbar from "@components/Navbar/Navbar.jsx";
-import {useMemo} from "react";
-import {useMemberships, useRelations, useUser} from "@lib/hooks/useUser.jsx";
 import toast from "react-hot-toast";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import {relationListService, userService} from "@lib/services/userServices.js";
+import useSearchParamChange from "@lib/hooks/useSearchParamChange.jsx";
+import {useRoomsContext} from "@lib/context/RoomsContext.jsx";
+import {useUserContext} from "@lib/context/UserContext.jsx";
+import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
+import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
+import {useWebSocketContext} from "@lib/context/WebSocketContext.jsx";
 
 const DefaultLayout = ({children}) => {
-    const [accessToken, _] = useAccessToken()
-    const [user, setUser] = useUser()
-    const [memberShips, setMemberShips] = useMemberships()
-    const [relations, setRelations] = useRelations()
+    const [accessToken] = useAccessToken();
+    const {setUser} = useUserContext();
+    const {setMemberships} = useMembershipsContext();
+    const {setRelations} = useRelationsContext();
 
     useMemo(() => {
         const setup = async () => {
             try {
-                const [user, memberShips] = await userService()
-                const response = await relationListService()
-                setUser(user, null)
-                setMemberShips(memberShips, [])
-                setRelations(response, [])
+                const [user, memberShips] = await userService();
+                const response = await relationListService();
+                setUser(user);
+                setMemberships(memberShips);
+                setRelations(response);
             } catch (error) {
-                toast.error("Loading user data failed . \n Please re enter and try again.", {id: "load-user"})
+                toast.error("Loading user data failed. Please re-enter and try again.", {
+                    id: "load-user",
+                });
             }
+        };
+        if (accessToken) {
+            setup();
         }
-        setup()
-    }, [accessToken])
+    }, [accessToken]);
 
 
     return (
-        <RootLayout>
+        <>
             <Navbar/>
-            <Container maxWidth={"xl"} sx={{marginTop: {xs: "2rem", lg: "100px", xl: "50px"}, position: "relative"}}>
-                <Grid container spacing={4} justifyContent={"end"}>
+            <Container maxWidth="xl" sx={{marginTop: {xs: "2rem", lg: "100px", xl: "50px"}, position: "relative"}}>
+                <Grid container spacing={4} justifyContent="end">
                     <Grid item xs={12} sm={4} md={3} lg={3} xl={2}>
                         <SideNavigation/>
                     </Grid>
                     {children}
                 </Grid>
             </Container>
-        </RootLayout>
-    )
-}
+        </>
+    );
+};
 
-
-export default DefaultLayout
+export default DefaultLayout;

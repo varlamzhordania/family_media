@@ -1,16 +1,16 @@
-import {Box, Button, Card, CardContent, CardHeader, IconButton, Modal, TextField, Typography} from "@mui/material";
+import {Box, Button, Card, CardContent, CardHeader, Modal, TextField, Typography} from "@mui/material";
 import {ContentCopy, Mail} from "@mui/icons-material";
 import toast from "react-hot-toast";
 import {requestInviteCodeService} from "@lib/services/familyService.js";
 import {useEffect, useRef, useState} from "react";
-import {useUser} from "@lib/hooks/useUser.jsx";
 import {havePermission} from "@lib/utils/family.js";
 import {HorizontalStyle, ModalStyle} from "@lib/theme/styles.js";
 import {handleError} from "@lib/utils/service.js";
 import {sendInvitationService} from "@lib/services/eventsService.js";
+import {useUserContext} from "@lib/context/UserContext.jsx";
 
 const FamilyCode = ({family, query}) => {
-    const [user, _] = useUser()
+    const {user} = useUserContext()
     const [code, setCode] = useState(null)
     const [showModal, setShowModal] = useState(false)
     const inputRef = useRef(null)

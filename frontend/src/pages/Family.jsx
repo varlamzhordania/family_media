@@ -3,14 +3,14 @@ import {
     AvatarGroup,
     Box,
     Button,
-    Card,
+    Card, CardActions,
     CardContent,
     CardHeader,
     Grid,
     IconButton,
     ListItemIcon,
     Menu,
-    MenuItem,
+    MenuItem, Modal,
     Paper,
     Skeleton,
     TextField,
@@ -18,11 +18,14 @@ import {
 } from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
 import {joinService, leaveService, listService} from "@lib/services/familyService.js";
-import {Diversity1, Diversity2, ExitToApp, MoreVert, Visibility} from "@mui/icons-material";
+import {Diversity1, Diversity2, DoorSliding, MoreVert, Visibility} from "@mui/icons-material";
 import {useRef, useState} from "react";
 import toast from "react-hot-toast";
 import {Link, useNavigate} from "react-router-dom";
 import FamilyDrawer from "@components/FamilyDrawer/FamilyDrawer.jsx";
+import {DANGER_STYLE, ModalStyle} from "@lib/theme/styles.js";
+import {useUserContext} from "@lib/context/UserContext.jsx";
+import {useWebSocketContext} from "@lib/context/WebSocketContext.jsx";
 
 const Family = () => {
 
@@ -49,7 +52,7 @@ const FamilyJoin = ({query}) => {
     const [isError, setIsError] = useState(false)
     const [showDrawer, setShowDrawer] = useState(false)
     const codeRef = useRef(null)
-
+    const {sendJsonMessage} = useWebSocketContext()
 
     const handleDrawer = () => {
         setShowDrawer(prevState => !prevState)
@@ -83,6 +86,8 @@ const FamilyJoin = ({query}) => {
             const response = await joinService(JSON.stringify({code: value.toString()}));
             toast.success(response.message);
             query.refetch();
+
+            sendJsonMessage({action: "pull_rooms"})
         } catch (error) {
             if (error.detail === "No Family matches the given query.") {
                 toast.error("Invalid invite code.");
@@ -119,7 +124,8 @@ const FamilyJoin = ({query}) => {
                     <Button variant={"soft"} color={"secondary"} onClick={handleJoin}>JOIN</Button>
                 </Box>
                 <Box>
-                    <Button variant={"soft"} startIcon={<Diversity1/>} onClick={handleDrawer}>BUILD YOUR OWN FAMILY </Button>
+                    <Button variant={"soft"} startIcon={<Diversity1/>} onClick={handleDrawer}>BUILD YOUR OWN
+                        FAMILY </Button>
                 </Box>
             </Box>
             <FamilyDrawer showDrawer={showDrawer} handleDrawer={handleDrawer}/>
@@ -156,14 +162,22 @@ const FamilyCardSkeleton = () => {
 
 }
 const FamilyCard = ({data, query}) => {
+    const [showModal, setShowModal] = useState(false)
+    const {user} = useUserContext()
     const [anchorEl, setAnchorEl] = useState(null);
     const navigate = useNavigate()
+    const {sendJsonMessage} = useWebSocketContext()
+
+    const handleModal = () => {
+        setShowModal(prevState => !prevState)
+    }
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
         setAnchorEl(null);
     };
+    const isCreator = data?.creator === user?.id
 
     const goToFamilyDashboard = () => {
         return navigate(`/family/${data.id}/`);
@@ -172,8 +186,11 @@ const FamilyCard = ({data, query}) => {
     const handleLeave = async () => {
         try {
             await leaveService(data.id)
-            toast.success(`You left the ${data.name} family.`)
+            toast.success(isCreator ? `${data.name} family disbanded.` : `You left the ${data.name} family.`)
             query.refetch()
+            handleClose()
+            handleModal()
+            sendJsonMessage({action: "pull_rooms"})
         } catch (error) {
             toast.error(error.detail || "Operation Failed.\ntry again")
         }
@@ -254,15 +271,48 @@ const FamilyCard = ({data, query}) => {
                         <ListItemIcon>
                             <Visibility/>
                         </ListItemIcon>
-                        Visit Family
+                        Visit family
                     </MenuItem>
-                    <MenuItem onClick={handleLeave}>
+                    <MenuItem onClick={handleModal} sx={DANGER_STYLE}>
                         <ListItemIcon>
-                            <ExitToApp/>
+                            <DoorSliding/>
                         </ListItemIcon>
-                        Leave Family
+                        {isCreator ? "Disband family" : "Leave family"}
                     </MenuItem>
                 </Menu>
+                <Modal open={showModal} onClose={handleModal}>
+                    <Card sx={ModalStyle}>
+                        <CardHeader
+                            title={isCreator ? `Disband ${data.name} Family` : `Leave ${data.name} Family`}
+                            titleTypographyProps={{fontWeight: "bold"}}
+                        />
+                        <CardContent>
+                            <Typography variant="body1">
+                                {isCreator
+                                    ? `Are you sure you want to disband the ${data.name} family? All data will be lost.`
+                                    : `Are you sure you want to leave the ${data.name} family?`}
+                            </Typography>
+                        </CardContent>
+                        <CardActions>
+                            <Button
+                                variant="soft"
+                                color="error"
+                                onClick={handleLeave}
+                                fullWidth
+                            >
+                                {isCreator ? "Disband" : "Leave"}
+                            </Button>
+                            <Button
+                                variant="soft"
+                                color="dark"
+                                onClick={handleModal}
+                                fullWidth
+                            >
+                                Cancel
+                            </Button>
+                        </CardActions>
+                    </Card>
+                </Modal>
             </Card>
         </Grid>
 

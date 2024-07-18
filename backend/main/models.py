@@ -144,5 +144,3 @@ class FamilyTree(MPTTModel):
         if self.parent:
             return f"{self.name} ({self.parent.name})"
         return self.name
-
-

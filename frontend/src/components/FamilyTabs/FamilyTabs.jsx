@@ -2,11 +2,11 @@ import {useState} from "react";
 import {Box, Tab, Tabs} from "@mui/material";
 import FamilyFeeds from "@components/FamilyFeeds/FamilyFeeds.jsx";
 import FamilySettings from "@components/FamilySettings/FamilySettings.jsx";
-import {useUser} from "@lib/hooks/useUser.jsx";
 import FamilyTree from "@components/FamilyTree/FamilyTree.jsx";
+import {useUserContext} from "@lib/context/UserContext.jsx";
 
 const FamilyTabs = ({family, query}) => {
-    const [user, _] = useUser()
+    const {user} = useUserContext()
     const [value, setValue] = useState(0);
 
     const handleChange = (event, newValue) => {

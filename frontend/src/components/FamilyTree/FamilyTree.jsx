@@ -23,13 +23,13 @@ import VisuallyHiddenInput from "@components/VisuallyHiddenInput/VisuallyHiddenI
 import {handleError} from "@lib/utils/service.js";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
-import {useUser} from "@lib/hooks/useUser.jsx";
 import {havePermission} from "@lib/utils/family.js";
 import {ModalStyle} from "@lib/theme/styles.js";
+import {useUserContext} from "@lib/context/UserContext.jsx";
 
 
 const FamilyTree = ({family, query}) => {
-    const [user, _] = useUser()
+    const {user} = useUserContext()
     const [showModal, setShowModal] = useState(false)
     const [showForm, setShowForm] = useState(false)
     const [isEditing, setIsEditing] = useState(false)

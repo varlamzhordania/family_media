@@ -11,6 +11,7 @@ import Register from "@pages/Register.jsx";
 import Invitation from "@pages/Invitation.jsx";
 import ForgetPassword from "@pages/ForgetPassword.jsx";
 import ResetPassword from "@pages/ResetPassword.jsx";
+import Message from "@pages/Message.jsx";
 
 export const router = createBrowserRouter([
     {
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
                     {
                         path: "/family/",
                         element: <Family/>,
+                    },
+                    {
+                        path: "/message/",
+                        element: <Message/>
                     },
                     {
                         path: "/family/:id/",

@@ -15,11 +15,11 @@ import {useRef, useState} from "react";
 import {createService} from "@src/lib/services/postService.js";
 import {useQueryClient} from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import {useMemberships} from "@lib/hooks/useUser.jsx";
 import {handleError} from "@lib/utils/service.js";
+import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
 
 const FabAddPost = ({handleDrawer, showDrawer}) => {
-    const [memberShips, _] = useMemberships()
+    const {memberShips}= useMembershipsContext()
     const [family, setFamily] = useState(null)
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [coverFile, setCoverFile] = useState(null);
