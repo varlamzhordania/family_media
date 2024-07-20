@@ -51,7 +51,13 @@ const ChatPanel = ({selected, setSelected, height}) => {
                     sendReadSignal(reversedData);
                     break;
                 case "new_message":
-                    setMessages((prevState) => [...prevState, data])
+                    setMessages((prevState) => {
+                        const exists = prevState.find(item => item.id === data.id);
+                        if (!exists) {
+                            return [...prevState, data];
+                        }
+                        return prevState;
+                    });
                     setRooms(prevRooms => updateRoomLastMessage(prevRooms, data));
                     sendReadSignal([data])
                     break;
@@ -198,7 +204,8 @@ const ChatPanel = ({selected, setSelected, height}) => {
                             )}
                         </Box>
                         <Box sx={{width: "100%"}}>
-                            <InputForm sendJsonMessage={sendJsonMessage} replyTo={replyTo} setReplyTo={setReplyTo}/>
+                            <InputForm selected={selected} sendJsonMessage={sendJsonMessage} replyTo={replyTo}
+                                       setReplyTo={setReplyTo}/>
                         </Box>
 
                     </CardContent>

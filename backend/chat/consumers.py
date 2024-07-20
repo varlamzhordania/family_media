@@ -37,18 +37,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         action = text_data_json['action']
         if action == "new_message":
-            serializer = await self.save_message(text_data_json)
-            await self.broadcast_message(action, serializer)
-            await self.send_notification(action, serializer)
+            await self.save_message(text_data_json)
         elif action == "delete_message":
             result = await self.delete_message(text_data_json)
             if result:
-                await self.broadcast_message(action, text_data_json)
+                await self.broadcast_message(text_data_json, action)
         elif action == "read_messages":
             serializer = await self.set_read(text_data_json)
-            await self.broadcast_message(action, serializer)
+            await self.broadcast_message(serializer, action)
         elif action == "typing" or action == "stop_typing":
-            await self.broadcast_message(action, text_data_json)
+            await self.broadcast_message(text_data_json, action)
 
     async def send_history(self):
         queryset = await self.pull_history(self.room_id)
@@ -58,7 +56,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }
         await self.send(text_data=json.dumps(message))
 
-    async def broadcast_message(self, action, data):
+    async def broadcast_message(self, data: dict, action=None):
+        if (isinstance(data, dict) and
+                (data.get("type", '') == "send_notification" or data.get("type", '') == "broadcast_message")):
+            action = data['message']['action']
+            data = data['message']['data']
+
         if action == "new_message":
             message = {
                 "action": action,
@@ -80,6 +83,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "results": data
             }
         else:
+            print("ping action", action)
+            print("ping data", data)
             message = {
                 "action": "ping",
                 "results": None
@@ -100,7 +105,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Send message to WebSocket
         await self.send(text_data=json.dumps(message))
 
-    async def send_notification(self, action, data):
+    async def send_notification(self, data: dict, action=None):
+        if data.get("type", '') == "send_notification":
+            action = data['message']['action']
+            data = data['message']['data']
         participants = await self.get_participants()
         messages = await self.ready_message(action, participants, data)
         for message in messages:
@@ -116,14 +124,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def ready_message(self, action, participants, data):
         messages = []
         for participant in participants:
-            if participant.id != self.user.id:
-                messages.append(
-                    {
-                        "action": action,
-                        "target": participant.id,
-                        "results": data
-                    }
-                )
+            messages.append(
+                {
+                    "action": action,
+                    "target": participant.id,
+                    "results": data
+                }
+            )
         return messages
 
     @database_sync_to_async

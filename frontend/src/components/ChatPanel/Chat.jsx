@@ -1,48 +1,15 @@
-import {useRef, useState} from "react";
+import {useRef} from "react";
 import {Avatar, Box, Typography} from "@mui/material";
 import {getFormattedDate} from "@lib/utils/times.js";
 import {completeServerUrl, isSender} from "@lib/utils/socket.js";
-import {Check, DoneAll} from "@mui/icons-material";
-import {HorizontalStyle, VerticalStyle} from "@lib/theme/styles.js";
-import {getDirectionMessage} from "@lib/utils/index.jsx";
-import {useSwipeable} from "react-swipeable";
+import {AudioFile, Check, DoneAll, InsertDriveFile, Videocam} from "@mui/icons-material";
+import {CHAT_ATTACHMENT_STYLE, HorizontalStyle, VerticalStyle} from "@lib/theme/styles.js";
+import {formatFileSize, getDirectionMessage} from "@lib/utils/index.jsx";
+import {getOpponent} from "@lib/utils/chat.jsx";
+import FileIcons from "@components/ChatPanel/FileIcons.jsx";
 
 const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, user, setReplyTo}) => {
-    // const [swipeDirection, setSwipeDirection] = useState('');
-    // const [isSwiping, setIsSwiping] = useState(false);
     const messageRef = useRef(null);
-    //
-    // const handleSwiping = (props) => {
-    //     if (props.deltaX < -30) {
-    //         setIsSwiping(true);
-    //         setSwipeDirection('left');
-    //     }
-    // };
-    //
-    // const handleSwipeLeft = (props) => {
-    //     setSwipeDirection('left');
-    //     setIsSwiping(false);
-    //     if (props.deltaX < -200) {
-    //         setSelectMessage(data);
-    //         setReplyTo(data)
-    //     }
-    //
-    // };
-    //
-    // const handleSwipeEnd = () => {
-    //     setIsSwiping(false);
-    //     setSwipeDirection('');
-    // };
-    //
-    // const handlers = useSwipeable({
-    //     onSwiping: handleSwiping,
-    //     onSwipedLeft: handleSwipeLeft,
-    //     onSwiped: handleSwipeEnd,
-    //     preventDefaultTouchmoveEvent: true,
-    //     trackMouse: true
-    // className={`chat-message ${isSwiping ? 'swiping' : ''} ${swipeDirection}`}
-    // });
-
     const handleContextMenu = (event) => {
         event.preventDefault();
         setContextMenu(
@@ -57,7 +24,6 @@ const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, us
 
     const isOwn = isSender(data, user)
 
-
     return (
         <Box id={`chat_${data.id}`} sx={{
             ...VerticalStyle,
@@ -69,28 +35,28 @@ const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, us
             float: isOwn ? "right" : "left",
             gap: 0,
         }} onContextMenu={handleContextMenu}>
+            {data.medias.map((media, index) => <ChatMedia key={index} isOwn={isOwn} data={media}/>)}
             <Box sx={{
                 ...HorizontalStyle,
                 width: "100%",
                 flexDirection: isOwn ? "row-reverse" : "row",
             }}>
-
                 <Typography variant={"caption"} sx={{
                     width: "100%",
                     p: isOwn ? "0 1rem 0 0" : "0 0 0 4rem",
                     textAlign: isOwn ? "end" : "start",
                 }}
                 >
-                    {!isOwn && selected?.type !== "private" && data.user.full_name}
+                    {!isOwn && selected?.type !== "private" && data?.user?.full_name}
                 </Typography>
             </Box>
 
             <Box sx={{...HorizontalStyle, width: "100%", alignItems: "end"}}>
                 {
                     !isOwn && selected?.type !== "private" &&
-                    <Avatar sx={{width: "45px", height: "45px", mb: 2}} src={completeServerUrl(data.user.avatar)}
-                            alt={data.user.full_name}>
-                        {data.user.initial_name}
+                    <Avatar sx={{width: "45px", height: "45px", mb: 2}} src={completeServerUrl(data?.user?.avatar)}
+                            alt={data?.user?.full_name}>
+                        {data?.user?.initial_name}
                     </Avatar>
                 }
                 <Box sx={{...VerticalStyle, width: "100%", gap: 0.5}}>
@@ -110,7 +76,7 @@ const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, us
                                      ...VerticalStyle,
                                      gap: 0,
                                      width: "100%",
-                                     bgcolor: isOwn ? `rgba(0,0,0,0.05)` : `rgba(0,0,0,0.08)`,
+                                     bgcolor: isOwn ? `rgba(0, 0, 0, 0.05)` : `rgba(0, 0, 0, 0.08)`,
                                      borderRadius: theme => theme.shape.borderRadius / 8,
                                      borderLeft: theme => `4px solid ${isOwn ? theme.palette.primary.main : theme.palette.primary.main}`,
                                      py: 1,
@@ -135,9 +101,8 @@ const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, us
                                         wordBreak: "break-word",
                                         direction: getDirectionMessage(data.content),
                                     }}
-
                         >
-                            {data.content}
+                            {data.content ? data.content : isOwn ? `You uploaded ${data.medias.length} file. ` : `${data.user.full_name} uploaded ${data.medias.length} file.`}
                         </Typography>
                     </Box>
                     <Box sx={{
@@ -164,6 +129,73 @@ const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, us
 
 
     )
+}
+
+const ChatMedia = ({data, isOwn}) => {
+    const url = completeServerUrl(data.file)
+    const getPreviewComponent = () => {
+        const image = ['jpg', 'jpeg', 'pjpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'tif', 'svg', 'heif', 'heic'];
+        const video = ['mp4', 'webm', 'avi', 'mkv', 'mpeg', 'mpg', 'mov', 'wmv', 'flv', '3gp', 'm4v'];
+        const audio = ['mp3', 'wav', 'ogg', 'flac'];
+        const document = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv'];
+
+        const ext = data.ext.toLowerCase().split(".")[1];
+
+
+        if (image.includes(ext)) {
+            return <img src={url} alt={extractName()}
+                        style={{width: "100%", height: "100%", objectFit: "cover"}}/>;
+        } else if (video.includes(ext)) {
+            return <Box sx={CHAT_ATTACHMENT_STYLE}>
+                <Videocam/>
+            </Box>;
+        } else if (audio.includes(ext)) {
+            return <Box sx={CHAT_ATTACHMENT_STYLE}>
+                <AudioFile/>
+            </Box>;
+        } else {
+            return <Box sx={CHAT_ATTACHMENT_STYLE}>
+                <InsertDriveFile/>
+            </Box>;
+        }
+    }
+
+    const extractName = () => {
+        const parts = data.file.split("/");
+        return parts[parts.length - 1];
+    }
+
+    return (
+        <Box sx={{
+            ...HorizontalStyle,
+            bgcolor: theme => isOwn ? `${theme.palette.primary.light}50` : "grey.main",
+            width: "100%",
+            gap: 0.5,
+            padding: 0.5,
+            borderRadius: "8px",
+            mb: 0.3,
+            textDecoration: "none",
+            "&:hover": {
+                bgcolor: theme => isOwn ? `${theme.palette.primary.main}50` : "grey.dark",
+            }
+        }} component={"a"} href={url} download color={"black"}>
+            <Box sx={{
+                width: "64px",
+                height: "64px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                overflow: "hidden",
+            }}>
+                {getPreviewComponent()}
+            </Box>
+            <Box sx={{...VerticalStyle, gap: 0, paddingLeft: "8px", flexGrow: 1}}>
+                <Typography variant={"subtitle2"}>
+                    {extractName()}
+                </Typography>
+                <Typography variant={"caption"}>{formatFileSize(data.size)}</Typography>
+            </Box>
+        </Box>
+    );
 }
 
 export default Chat

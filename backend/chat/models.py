@@ -1,8 +1,11 @@
+import os
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
 from core.utils import BaseModel, UploadPath
+from core.validators import FileExtensionValidator, ValidateFileSize
 from main.models import Family
 
 
@@ -85,6 +88,7 @@ class Message(BaseModel):
     have_read = models.ManyToManyField(
         get_user_model(),
         verbose_name=_('Have Read'),
+        blank=True,
     )
     is_edited = models.BooleanField(
         verbose_name=_('Is Edited'),
@@ -112,3 +116,47 @@ class Message(BaseModel):
 
     def __str__(self):
         return f'{self.room}: {self.content}'
+
+
+class MessageMedia(BaseModel):
+    message = models.ForeignKey(
+        Message,
+        verbose_name=_("Message"),
+        on_delete=models.SET_NULL,
+        related_name="medias",
+        blank=True,
+        null=True
+    )
+    file = models.FileField(
+        upload_to=UploadPath(folder="chat", sub_path="media"),
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=[
+                    'jpg', 'jpeg', 'pjpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'tif', 'svg', 'heif', 'heic',
+                    # Image formats
+                    'mp4', 'webm', 'avi', 'mkv', 'mpeg', 'mpg', 'mov', 'wmv', 'flv', '3gp', 'm4v',  # Video formats
+                    'mp3', 'wav', 'ogg', 'flac',  # Audio formats
+                    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv',  # Document formats
+                    # 'zip', 'rar', '7z', 'gz', 'tar',  # Archive formats
+                ]
+            ),
+            ValidateFileSize(allowed_file_size=50)
+        ]
+    )
+    size = models.PositiveIntegerField(default=0, verbose_name=_("File Size"), )
+
+    class Meta:
+        verbose_name = _("Message media")
+        verbose_name_plural = _("Message medias")
+        ordering = ('created_at',)
+
+    def __str__(self):
+        return f"{self.id} - {self.message}"
+
+    def save(self, *args, **kwargs):
+        if self.file and not self.size:
+            self.size = self.file.size
+        super().save(*args, **kwargs)
+
+    def get_extension(self):
+        return os.path.splitext(self.file.name)[1]

@@ -1,21 +1,51 @@
 import {useEffect, useRef, useState} from "react";
 import toast from "react-hot-toast";
 import {handleError} from "@lib/utils/service.js";
-import {getDirectionMessage} from "@lib/utils/index.jsx";
-import {Box, IconButton, InputAdornment, TextField, Typography} from "@mui/material";
-import {HorizontalStyle, VerticalStyle} from "@lib/theme/styles.js";
-import {Close, EmojiEmotions, Reply, Send} from "@mui/icons-material";
+import {getDirectionMessage, getRandomNumber} from "@lib/utils/index.jsx";
+import {Box, IconButton, InputAdornment, ListItemIcon, Menu, MenuItem, TextField, Typography} from "@mui/material";
+import {CHAT_UPLOAD_MODAL, HorizontalStyle, MenuStyleReverseLeft, VerticalStyle} from "@lib/theme/styles.js";
+import {
+    Add,
+    Close,
+    EmojiEmotions,
+    InsertDriveFile,
+    PermMedia,
+    Reply,
+    Send,
+} from "@mui/icons-material";
 import EmojiPicker from "emoji-picker-react";
 import {useUserContext} from "@lib/context/UserContext.jsx";
+import VisuallyHiddenInput from "@components/VisuallyHiddenInput/VisuallyHiddenInput.jsx";
+import FilePreview from "@components/ChatPanel/FilePreview.jsx";
+import UploadProgress from "@components/ChatPanel/UploadProgress.jsx";
 
-const InputForm = ({sendJsonMessage, replyTo, setReplyTo}) => {
+const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo}) => {
     const {user} = useUserContext()
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [uploadingTasks, setUploadingTasks] = useState(null);
     const [showEmoji, setShowEmoji] = useState(false)
     const [data, setData] = useState({
         text: ""
     })
     const [direction, setDirection] = useState("rtl")
+    const [selectedFiles, setSelectedFiles] = useState({media: [], documents: []});
     const emojiPickerRef = useRef(null);
+
+    const handleFileChange = (event, type) => {
+        const files = Array.from(event.target.files);
+        setSelectedFiles((prevFiles) => ({
+            ...prevFiles,
+            [type]: [...prevFiles[type], ...files],
+        }));
+    };
+
+    const handleMenu = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
 
     const handleShowEmoji = () => {
@@ -76,13 +106,50 @@ const InputForm = ({sendJsonMessage, replyTo, setReplyTo}) => {
         }
     }
 
+    const handleSendXhr = (formData) => {
+        try {
+            if (!uploadingTasks) {
+                setUploadingTasks({id: getRandomNumber(), data: formData, start: false, last_progress: 0})
+            }
+            // setUploadingTasks(prevState => {
+            //     const existingTask = prevState.find(task => {
+            //         // Compare existing tasks with new ones
+            //         return JSON.stringify(task.data) === JSON.stringify(formData);
+            //     });
+            //     console.log("exists", existingTask)
+            //     if (!existingTask) {
+            //         return [...prevState, {id: getRandomNumber(), data: formData, start: false, last_progress: 0}];
+            //     }
+            //     return prevState;
+            // });
+
+
+        } catch (error) {
+            handleError(error);
+        }
+    };
+
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            setData({text: ""})
+            setSelectedFiles({media: [], documents: []})
         };
     }, []);
+
+    useEffect(() => {
+        setData({text: ""})
+        setSelectedFiles({media: [], documents: []})
+
+        return () => {
+            setData({text: ""})
+            setSelectedFiles({media: [], documents: []})
+        }
+
+    }, [selected]);
+
 
     useEffect(() => {
         const dir = getDirectionMessage(data.text)
@@ -92,6 +159,19 @@ const InputForm = ({sendJsonMessage, replyTo, setReplyTo}) => {
 
     return (
         <form onSubmit={handleSubmit}>
+            {
+                uploadingTasks &&
+                <Box sx={{...CHAT_UPLOAD_MODAL,height:"fit-content"}}>
+                    <UploadProgress  task={uploadingTasks} setTasks={setUploadingTasks}/>
+                </Box>
+            }
+
+            {
+                (selectedFiles?.media?.length > 0 || selectedFiles?.documents?.length > 0) &&
+                <FilePreview selected={selected} reply={replyTo} selectedFiles={selectedFiles}
+                             setSelectedFiles={setSelectedFiles} handleSendXhr={handleSendXhr}/>
+            }
+
             {
                 replyTo && <Box sx={{
                     ...HorizontalStyle,
@@ -143,6 +223,9 @@ const InputForm = ({sendJsonMessage, replyTo, setReplyTo}) => {
                             <IconButton onClick={handleShowEmoji}>
                                 <EmojiEmotions/>
                             </IconButton>
+                            <IconButton onClick={handleMenu}>
+                                <Add/>
+                            </IconButton>
                         </InputAdornment>),
                         endAdornment: (<InputAdornment position="end">
                             <IconButton color={"primary"} type={"submit"}>
@@ -167,7 +250,53 @@ const InputForm = ({sendJsonMessage, replyTo, setReplyTo}) => {
                                  onEmojiClick={onEmojiClick}/>
                 </Box>
             </Box>
+            <AttachmentMenu anchorEl={anchorEl} handleClose={handleClose} selectedFiles={selectedFiles}
+                            handleFileChange={handleFileChange}/>
         </form>
+    )
+}
+
+
+const AttachmentMenu = ({anchorEl, handleClose, handleFileChange}) => {
+
+    return (
+        <Menu
+            anchorEl={anchorEl}
+            keepMounted
+            PaperProps={{
+                elevation: 0,
+                sx: {...MenuStyleReverseLeft, width: 200}
+            }}
+            transformOrigin={{horizontal: 'left', vertical: 'bottom'}}
+            anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+        >
+            <MenuItem component={"label"}>
+                <ListItemIcon>
+                    <InsertDriveFile/>
+                </ListItemIcon>
+                Document
+                <VisuallyHiddenInput
+                    type="file"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.csv,.mp3,.wav,.ogg,.flac"
+                    multiple
+                    onChange={(e) => handleFileChange(e, 'documents')}
+                />
+            </MenuItem>
+            <MenuItem component={"label"}>
+                <ListItemIcon>
+                    <PermMedia/>
+                </ListItemIcon>
+                Photos & videos
+                <VisuallyHiddenInput
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    onChange={(e) => handleFileChange(e, 'media')}
+                />
+            </MenuItem>
+        </Menu>
     )
 }
 

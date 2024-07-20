@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import {getFormattedDate} from "@lib/utils/times.js";
 import {Favorite, FavoriteBorder, ModeCommentOutlined, NavigateBefore, NavigateNext} from "@mui/icons-material";
-import EmptyImage from "@public/empty.svg";
 import {register} from 'swiper/element/bundle';
 import VideoPlayer from "@components/VideoPlayer/VideoPlayer.jsx";
 import {findRelationByMemberId} from "@lib/utils/relations.js";
@@ -233,7 +232,7 @@ export const EmptyPosts = ({handleDrawer}) => {
                 <Box sx={{mb: 3}}>
                     <CardMedia
                         component="img"
-                        src={EmptyImage}
+                        src={"/empty.svg"}
                         alt="No posts available"
                         sx={{height: 400, width: 'auto'}}
                     />

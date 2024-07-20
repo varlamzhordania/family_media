@@ -19,6 +19,7 @@ import {useUserContext} from "@lib/context/UserContext.jsx";
 const ChatLists = ({selected, setSelected, height}) => {
     const {rooms} = useRoomsContext();
     const [sortedRooms, setSortedRooms] = useState([]);
+
     useEffect(() => {
         const sortRoomsByLastMessage = (rooms) => {
             return rooms?.slice()?.sort((a, b) => {

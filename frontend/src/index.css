@@ -49,10 +49,25 @@ swiper-container::part(bullet-active) {
     transition: transform 0.3s ease;
     cursor: grab;
 }
+
 .chat-message.swiping {
     cursor: grabbing;
 }
 
 .chat-message.swiping.left {
     transform: translateX(-100px);
+}
+
+.my-canvas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.my-canvas.hidden {
+    display: none;
+    width: 0;
+    height: 0;
 }
