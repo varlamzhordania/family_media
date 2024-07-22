@@ -1,7 +1,7 @@
 import {ListItemIcon, MenuItem, Menu} from "@mui/material";
 import {DANGER_STYLE} from "@lib/theme/styles.js";
-import {Chat, Delete, Reply, ContentCopy} from "@mui/icons-material";
-import {haveChatDeletePermission} from "@lib/utils/socket.js";
+import {Chat, Delete, Reply, ContentCopy, Edit} from "@mui/icons-material";
+import {haveChatDeletePermission, isSender} from "@lib/utils/socket.js";
 import {useNavigate} from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -14,6 +14,7 @@ const ChatMenu = ({
                       selected, setSelected,
                       user,
                       setReplyTo,
+                      setEditing
                   }) => {
     const navigate = useNavigate()
 
@@ -37,6 +38,11 @@ const ChatMenu = ({
         setContextMenu(null)
     }
 
+    const handleEdit = () => {
+        setEditing(selectMessage)
+        setContextMenu(null)
+    }
+
     return (
         <Menu onContextMenu={(e) => {
             e.preventDefault()
@@ -54,18 +60,6 @@ const ChatMenu = ({
                           height: 32,
                           ml: -0.5,
                           mr: 1,
-                      },
-                      '&::before': {
-                          content: '""',
-                          display: 'block',
-                          position: 'absolute',
-                          top: 0,
-                          right: 12,
-                          width: 10,
-                          height: 10,
-                          bgcolor: 'background.paper',
-                          transform: 'translateY(-50%) rotate(45deg)',
-                          zIndex: 0,
                       },
                   },
               }}
@@ -99,6 +93,15 @@ const ChatMenu = ({
                 </ListItemIcon>
                 Copy text
             </MenuItem>
+            {
+                isSender(selectMessage, user) &&
+                <MenuItem sx={{fontSize: "16px"}} onClick={handleEdit}>
+                    <ListItemIcon>
+                        <Edit fontSize={"small"}/>
+                    </ListItemIcon>
+                    Edit
+                </MenuItem>
+            }
 
             {
                 haveChatDeletePermission(selectMessage, selected, user) &&

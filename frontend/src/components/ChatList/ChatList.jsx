@@ -1,13 +1,12 @@
 import {
-    Avatar, Badge, IconButton,
+    Avatar, Badge,
     List,
     ListItem,
     ListItemAvatar,
     ListItemButton,
-    ListItemSecondaryAction,
     ListItemText
 } from "@mui/material";
-import {Diversity2, MoreVert} from "@mui/icons-material";
+import {Diversity2} from "@mui/icons-material";
 import {getAvatar, getChatName, getLastMessage, getOpponent} from "@lib/utils/chat.jsx";
 import {insertUrlParam, removeUrlParam} from "@lib/utils/index.jsx";
 import {useEffect, useRef, useState} from "react";
@@ -99,11 +98,6 @@ const PrivateRoom = ({data, selected, handleSelect}) => {
                               }}
                 />
             </ListItemButton>
-            <ListItemSecondaryAction>
-                <IconButton>
-                    <MoreVert/>
-                </IconButton>
-            </ListItemSecondaryAction>
         </ListItem>
     )
 }
@@ -127,11 +121,6 @@ const FamilyRoom = ({data, selected, handleSelect}) => {
                               }}
                 />
             </ListItemButton>
-            <ListItemSecondaryAction>
-                <IconButton>
-                    <MoreVert/>
-                </IconButton>
-            </ListItemSecondaryAction>
         </ListItem>
     )
 }

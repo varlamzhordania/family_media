@@ -74,3 +74,8 @@ def notify_new_message(sender, instance, created, **kwargs):
         channel_layer = get_channel_layer()
         channel_name = f"private_chat_{instance.room.id}"
         transaction.on_commit(lambda: send_layer_signal(channel_layer, channel_name, action, serializer))
+    else:
+        action = "edit_message"
+        channel_layer = get_channel_layer()
+        channel_name = f"private_chat_{instance.room.id}"
+        transaction.on_commit(lambda: send_layer_signal(channel_layer, channel_name, action, serializer))

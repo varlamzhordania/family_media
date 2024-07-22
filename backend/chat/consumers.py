@@ -2,6 +2,7 @@ from typing import List, Dict, Type, Optional, Any
 import json
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async, SyncToAsync
 from rest_framework.renderers import JSONRenderer
@@ -38,6 +39,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         action = text_data_json['action']
         if action == "new_message":
             await self.save_message(text_data_json)
+        if action == "edit_message":
+            await self.edit_message(text_data_json)
         elif action == "delete_message":
             result = await self.delete_message(text_data_json)
             if result:
@@ -67,6 +70,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "action": action,
                 "results": data
             }
+        elif action == "edit_message":
+            message = {
+                "action": action,
+                "results": data
+            }
         elif action == "delete_message":
             message = {
                 "action": action,
@@ -83,8 +91,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "results": data
             }
         else:
-            print("ping action", action)
-            print("ping data", data)
             message = {
                 "action": "ping",
                 "results": None
@@ -168,6 +174,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return self.get_serializer_data_to_dict(MessageSerializer(obj, many=False))
         obj = Message.objects.create(user=self.user, room_id=self.room_id, content=message)
         return self.get_serializer_data_to_dict(MessageSerializer(obj, many=False))
+
+    @database_sync_to_async
+    def edit_message(self, data):
+        message_content = data.get('message')
+        editing_id = data.get('editing')
+
+        if editing_id:
+            try:
+                instance = Message.objects.get(id=editing_id)
+                instance.content = message_content
+                instance.is_edited = True
+                instance.edited_at = timezone.now()
+                instance.save()
+                return self.get_serializer_data_to_dict(MessageSerializer(instance, many=False))
+            except ObjectDoesNotExist:
+                # Handle the case where the message with the given ID does not exist
+                return {"error": "Message not found"}
+            except Exception as e:
+                # Handle other possible exceptions
+                return {"error": str(e)}
+        else:
+            return {"error": "Editing ID not provided"}
 
     @database_sync_to_async
     def delete_message(self, data):

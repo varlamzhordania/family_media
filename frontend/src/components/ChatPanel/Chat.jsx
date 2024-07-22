@@ -5,10 +5,8 @@ import {completeServerUrl, isSender} from "@lib/utils/socket.js";
 import {AudioFile, Check, DoneAll, InsertDriveFile, Videocam} from "@mui/icons-material";
 import {CHAT_ATTACHMENT_STYLE, HorizontalStyle, VerticalStyle} from "@lib/theme/styles.js";
 import {formatFileSize, getDirectionMessage} from "@lib/utils/index.jsx";
-import {getOpponent} from "@lib/utils/chat.jsx";
-import FileIcons from "@components/ChatPanel/FileIcons.jsx";
 
-const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, user, setReplyTo}) => {
+const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, user}) => {
     const messageRef = useRef(null);
     const handleContextMenu = (event) => {
         event.preventDefault();
@@ -118,10 +116,15 @@ const Chat = ({data, contextMenu, selected, setContextMenu, setSelectMessage, us
                                 timeOptions: {hour: "numeric", minute: "numeric"},
                             })}
                         </Typography>
-                        {
-                            data.have_read.length > 1 ? <DoneAll fontSize={"8px"} color={"primary"}/> :
-                                <Check fontSize={"8px"} color={"action"}/>
-                        }
+                        <Box sx={{...HorizontalStyle,alignItems:"start",}}>
+                            {
+                                data?.is_edited && <Typography variant={"caption"} component={"p"}>Edited</Typography>
+                            }
+                            {
+                                data.have_read.length > 1 ? <DoneAll fontSize={"8px"} color={"primary"}/> :
+                                    <Check fontSize={"8px"} color={"action"}/>
+                            }
+                        </Box>
                     </Box>
                 </Box>
             </Box>
@@ -137,7 +140,7 @@ const ChatMedia = ({data, isOwn}) => {
         const image = ['jpg', 'jpeg', 'pjpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'tif', 'svg', 'heif', 'heic'];
         const video = ['mp4', 'webm', 'avi', 'mkv', 'mpeg', 'mpg', 'mov', 'wmv', 'flv', '3gp', 'm4v'];
         const audio = ['mp3', 'wav', 'ogg', 'flac'];
-        const document = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv'];
+        // const document = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv'];
 
         const ext = data.ext.toLowerCase().split(".")[1];
 

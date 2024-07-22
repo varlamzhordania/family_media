@@ -31,6 +31,7 @@ const ChatPanel = ({selected, setSelected, height}) => {
     const [contextMenu, setContextMenu] = useState(null);
     const [selectMessage, setSelectMessage] = useState(null)
     const [replyTo, setReplyTo] = useState(null);
+    const [editing, setEditing] = useState(null);
 
     const [searchParams] = useSearchParams()
     const messageContainerRef = useRef(null);
@@ -60,6 +61,15 @@ const ChatPanel = ({selected, setSelected, height}) => {
                     });
                     setRooms(prevRooms => updateRoomLastMessage(prevRooms, data));
                     sendReadSignal([data])
+                    break;
+                case "edit_message":
+                    setMessages((prevState) => {
+                        const exists = prevState.find(item => item.id === data.id);
+                        if (exists) {
+                            return prevState.map(item => item.id === data.id ? data : item);
+                        }
+                        return [...prevState, data];
+                    });
                     break;
                 case "delete_message":
                     setMessages(prevState => {
@@ -200,12 +210,15 @@ const ChatPanel = ({selected, setSelected, height}) => {
                                       setReplyTo={setReplyTo}
                                       user={user}
                                       key={index}
+
                                 />
                             )}
                         </Box>
                         <Box sx={{width: "100%"}}>
                             <InputForm selected={selected} sendJsonMessage={sendJsonMessage} replyTo={replyTo}
-                                       setReplyTo={setReplyTo}/>
+                                       setReplyTo={setReplyTo} setEditing={setEditing}
+                                       editing={editing}
+                            />
                         </Box>
 
                     </CardContent>
@@ -216,6 +229,7 @@ const ChatPanel = ({selected, setSelected, height}) => {
                       handleClose={handleClose} user={user}
                       selected={selected} setSelected={setSelected} selectMessage={selectMessage}
                       replyTo={replyTo} setReplyTo={setReplyTo}
+                      setEditing={setEditing}
             />
 
         </Card>

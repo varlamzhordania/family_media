@@ -8,7 +8,7 @@ import {
     Add,
     Close,
     EmojiEmotions,
-    InsertDriveFile,
+    InsertDriveFile, ModeEdit,
     PermMedia,
     Reply,
     Send,
@@ -19,13 +19,13 @@ import VisuallyHiddenInput from "@components/VisuallyHiddenInput/VisuallyHiddenI
 import FilePreview from "@components/ChatPanel/FilePreview.jsx";
 import UploadProgress from "@components/ChatPanel/UploadProgress.jsx";
 
-const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo}) => {
+const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo, editing, setEditing}) => {
     const {user} = useUserContext()
     const [anchorEl, setAnchorEl] = useState(null);
     const [uploadingTasks, setUploadingTasks] = useState(null);
     const [showEmoji, setShowEmoji] = useState(false)
     const [data, setData] = useState({
-        text: ""
+        text: editing ? editing.content : ""
     })
     const [direction, setDirection] = useState("rtl")
     const [selectedFiles, setSelectedFiles] = useState({media: [], documents: []});
@@ -92,13 +92,15 @@ const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo}) => {
 
         try {
             const prepData = {
-                action: "new_message",
+                action: editing ? "edit_message" : "new_message",
                 message: data.text,
-                reply_to: replyTo ? replyTo.id : null
+                reply_to: replyTo ? replyTo.id : null,
+                editing: editing.id,
             }
             sendJsonMessage(prepData)
             setData({text: ""})
             setReplyTo(null)
+            setEditing(null)
             sendJsonMessage({action: "stop_typing", user: user.full_name})
 
         } catch (error) {
@@ -140,16 +142,21 @@ const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo}) => {
     }, []);
 
     useEffect(() => {
-        setData({text: ""})
+        setData({text: editing ? editing.content : ""})
         setSelectedFiles({media: [], documents: []})
 
         return () => {
             setData({text: ""})
             setSelectedFiles({media: [], documents: []})
+            setEditing(null)
         }
 
     }, [selected]);
 
+    useEffect(() => {
+        setData({text: editing ? editing.content : ""})
+
+    }, [editing]);
 
     useEffect(() => {
         const dir = getDirectionMessage(data.text)
@@ -161,8 +168,8 @@ const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo}) => {
         <form onSubmit={handleSubmit}>
             {
                 uploadingTasks &&
-                <Box sx={{...CHAT_UPLOAD_MODAL,height:"fit-content"}}>
-                    <UploadProgress  task={uploadingTasks} setTasks={setUploadingTasks}/>
+                <Box sx={{...CHAT_UPLOAD_MODAL, height: "fit-content"}}>
+                    <UploadProgress task={uploadingTasks} setTasks={setUploadingTasks}/>
                 </Box>
             }
 
@@ -170,6 +177,27 @@ const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo}) => {
                 (selectedFiles?.media?.length > 0 || selectedFiles?.documents?.length > 0) &&
                 <FilePreview selected={selected} reply={replyTo} selectedFiles={selectedFiles}
                              setSelectedFiles={setSelectedFiles} handleSendXhr={handleSendXhr}/>
+            }
+            {
+                editing && <Box sx={{
+                    ...HorizontalStyle,
+                    bgcolor: theme => `${theme.palette.info.light}30`,
+                    borderRadius: theme => theme.shape.borderRadius,
+                    py: 1,
+                    px: 2,
+                    mb: 1
+                }}>
+                    <ModeEdit/>
+                    <Box sx={{...VerticalStyle, gap: 0, width: "100%"}}>
+                        <Typography variant={"subtitle2"} color={"info.dark"}>
+                            Edit Message
+                        </Typography>
+                        <Typography variant={"caption"} sx={{wordBreak: "break-all"}}>
+                            {editing.content.length > 50 ? editing.content.substr(0, 50) + "..." : editing.content}
+                        </Typography>
+                    </Box>
+                    <IconButton onClick={() => setEditing(null)}><Close/></IconButton>
+                </Box>
             }
 
             {
