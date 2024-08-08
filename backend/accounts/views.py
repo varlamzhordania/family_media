@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from rest_framework import status, permissions, viewsets
+from rest_framework import status, permissions, viewsets, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
@@ -14,13 +14,13 @@ from django.contrib.auth import get_user_model
 from django.views import View
 from django.db import transaction
 
+from main.serializers import FamilyMembersSerializer
+
 from .tokens import email_verification_token
 from .serializers import UserSerializer, UserCreateSerializer, RelationSerializer, PasswordResetRequestSerializer, \
-    PasswordResetConfirmSerializer
+    PasswordResetConfirmSerializer, FriendshipSerializer, PublicUserSerializer
 from .helpers import send_email_verification, send_password_reset_email
-from .models import User, Relation
-
-from main.serializers import FamilyMembersSerializer
+from .models import User, Friendship, Relation
 
 
 class UserCreateAPIView(APIView):
@@ -71,13 +71,17 @@ class UserView(APIView):
         """
         user = request.user
         memberships = user.my_memberships.filter(is_active=True)
+        friends = user.get_friends()
+        print("friends",friends)
         user_serializer = self.serializer_class(user, context={'request': request})
         memberships_serializer = FamilyMembersSerializer(memberships, many=True, context={'request': request})
+        friends_serializer = PublicUserSerializer(friends, many=True, context={'request': request})
 
         return Response(
             {
                 "user": user_serializer.data,
-                "memberships": memberships_serializer.data
+                "memberships": memberships_serializer.data,
+                "friends": friends_serializer.data,
             }, status=status.HTTP_200_OK
         )
 
@@ -213,3 +217,46 @@ class RelationViewSet(viewsets.ModelViewSet):
             return Response(new_serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(tags=["Account"])
+class FriendRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request: Request, user_id: int, *args, **kwargs) -> Response:
+        data = request.data.copy()
+        action = data.get('action')
+        if not action:
+            return Response({'detail', 'Action required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if action == 'request':
+            to_user = get_object_or_404(get_user_model(), id=user_id)
+            if request.user.send_friend_request(to_user):
+                return Response({"detail": "Friend request sent successfully."}, status=status.HTTP_201_CREATED)
+            return Response({"detail": "Friend request already sent or invalid."}, status=status.HTTP_400_BAD_REQUEST)
+        elif action == 'accept':
+            from_user = get_object_or_404(get_user_model(), id=user_id)
+            if request.user.accept_friend_request(from_user):
+                return Response({"detail": "Friend request accepted successfully."}, status=status.HTTP_200_OK)
+            return Response({"detail": "Friend request not found."}, status=status.HTTP_404_NOT_FOUND)
+        elif action == 'decline':
+            from_user = get_object_or_404(get_user_model(), id=user_id)
+            if request.user.decline_friend_request(from_user):
+                return Response({"detail": "Friend request declined successfully."}, status=status.HTTP_200_OK)
+            return Response({"detail": "Friend request not found."}, status=status.HTTP_404_NOT_FOUND)
+        elif action == 'remove':
+            friend_user = get_object_or_404(get_user_model(), id=user_id)
+            request.user.remove_friend(friend_user)
+            return Response({"detail": "Friend removed successfully."}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(tags=["Account"])
+class FriendRequestListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = FriendshipSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return Friendship.objects.filter(to_user=self.request.user, status=Friendship.StatusChoices.REQUESTED)

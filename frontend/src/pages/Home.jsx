@@ -9,6 +9,7 @@ import FabAddPost from "@components/FabAddPost/FabAddPost.jsx";
 import {useState} from "react";
 import CommentDrawer from "@components/CommentDrawer/CommentDrawer.jsx";
 import {EmptyPosts, PostCard, PostSkeleton} from "@components/PostCard/PostCard.jsx";
+import FriendsList from "@components/FriendsList/FriendsList.jsx";
 
 const Home = () => {
     const [showPostDrawer, setShowPostDrawer] = useState(false)
@@ -44,7 +45,7 @@ const Home = () => {
                 </Box>
             </Grid>
             <Grid item xs={12} sm={8} md={3} lg={3} xl={3} order={{xs: 1, md: 2}}>
-                <RecentMessages/>
+                <FriendsList/>
             </Grid>
             <FabAddPost showDrawer={showPostDrawer} handleDrawer={handlePostDrawer}/>
             <CommentDrawer showDrawer={showCommentDrawer} handleDrawer={handleCommentDrawer}

@@ -12,17 +12,20 @@ import {
     Menu,
     MenuItem
 } from "@mui/material";
-import {Chat, Lan, MoreVert, Person, Star, SupervisorAccount} from "@mui/icons-material";
-import {useEffect, useState} from "react";
+import {Chat, Lan, MoreVert, Person, PersonAdd, PersonRemove, Star, SupervisorAccount} from "@mui/icons-material";
+import {useState} from "react";
 import {groupService} from "@lib/services/familyService.js";
 import {handleError} from "@lib/utils/service.js";
 import toast from "react-hot-toast";
-import {isAdmin, isCreator} from "@lib/utils/family.js";
+import {handleName, isAdmin, isCreator} from "@lib/utils/family.js";
 import RelationModal from "@components/Relations/RelationModal.jsx";
-import {findRelationByMemberId} from "@lib/utils/relations.js";
 import {useUserContext} from "@lib/context/UserContext.jsx";
 import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
 import {useNavigate} from "react-router-dom";
+import {useFriendshipsContext} from "@lib/context/FriendshipContext.jsx";
+import {IsFriend} from "@lib/utils/friendships.js";
+import {friendshipsSendRequestService} from "@lib/services/userServices.js";
+import {MenuStyle} from "@lib/theme/styles.js";
 
 const FamilyMembers = ({family, query}) => {
     const {relations, setRelations} = useRelationsContext()
@@ -48,10 +51,6 @@ const FamilyMembers = ({family, query}) => {
         navigate(`/message/?dm=${selectedMember.id}`)
     }
 
-    const handleName = (member) => {
-        const myRelation = findRelationByMemberId(relations, member.id)
-        return myRelation ? member.full_name + `(${myRelation.relation})` : member.full_name
-    }
 
 
     return (
@@ -76,7 +75,7 @@ const FamilyMembers = ({family, query}) => {
                                         </Avatar>
                                     </Badge>
                                 </ListItemAvatar>
-                                <ListItemText primary={member?.id === user?.id ? "You" : handleName(member)}
+                                <ListItemText primary={member?.id === user?.id ? "You" : handleName(relations,member)}
                                               secondary={isCreator(member, query) ? "Creator" : isAdmin(member, query) ? "Admin" : "Member"}
                                 />
                                 {
@@ -97,32 +96,7 @@ const FamilyMembers = ({family, query}) => {
             <Menu
                 anchorEl={anchorEl}
                 keepMounted
-                PaperProps={{
-                    elevation: 0,
-                    sx: {
-                        width: 185,
-                        overflow: 'visible',
-                        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                        '& .MuiAvatar-root': {
-                            width: 32,
-                            height: 32,
-                            ml: -0.5,
-                            mr: 1,
-                        },
-                        '&::before': {
-                            content: '""',
-                            display: 'block',
-                            position: 'absolute',
-                            top: 0,
-                            right: 12,
-                            width: 10,
-                            height: 10,
-                            bgcolor: 'background.paper',
-                            transform: 'translateY(-50%) rotate(45deg)',
-                            zIndex: 0,
-                        },
-                    },
-                }}
+                PaperProps={{...MenuStyle}}
                 transformOrigin={{horizontal: 'right', vertical: 'top'}}
                 anchorOrigin={{horizontal: 'right', vertical: 'bottom'}}
                 open={Boolean(anchorEl)}
@@ -141,7 +115,8 @@ const FamilyMembers = ({family, query}) => {
                         </ListItemIcon>
                         Relation
                     </MenuItem>,
-                    <ExtraMenuItems key={3} family={family} query={query} user={user}
+                    <FriendMenuItems key={3} user={user} selectedMember={selectedMember}/>,
+                    <ExtraMenuItems key={4} family={family} query={query} user={user}
                                     selectedMember={selectedMember}/>
                 ]}
             </Menu>
@@ -149,6 +124,51 @@ const FamilyMembers = ({family, query}) => {
                            showModal={showRelationModal} handleModal={handleRelationModal}/>
         </Card>
     )
+}
+
+const FriendMenuItems = ({user, selectedMember}) => {
+    const {friendships, setFriendships} = useFriendshipsContext()
+    const handleAddFriend = async () => {
+        try {
+
+            const response = await friendshipsSendRequestService(JSON.stringify({action: "request"}), selectedMember?.id)
+            toast.success(response.detail)
+        } catch (e) {
+            handleError(e)
+        }
+
+    }
+
+    const handleRemoveFriend = async () => {
+        try {
+            const response = await friendshipsSendRequestService(JSON.stringify({action: "remove"}), selectedMember?.id)
+            setFriendships(prevState => prevState.filter(item => item.id !== selectedMember.id))
+            toast.success(response.detail)
+        } catch (e) {
+            handleError(e)
+        }
+
+    }
+
+    if (IsFriend(user, selectedMember, friendships)) {
+        return (
+            <MenuItem onClick={handleRemoveFriend}>
+                <ListItemIcon>
+                    <PersonRemove/>
+                </ListItemIcon>
+                Remove friend
+            </MenuItem>
+        )
+    } else {
+        return (
+            <MenuItem onClick={handleAddFriend}>
+                <ListItemIcon>
+                    <PersonAdd/>
+                </ListItemIcon>
+                Add friend
+            </MenuItem>
+        )
+    }
 }
 
 const ExtraMenuItems = ({family, query, user, selectedMember}) => {

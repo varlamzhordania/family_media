@@ -1,30 +1,30 @@
-import {useEffect, useMemo} from "react";
+import {useMemo} from "react";
 import SideNavigation from "@components/Navigation/SideNavigation.jsx";
 import {Container, Grid} from "@mui/material";
 import Navbar from "@components/Navbar/Navbar.jsx";
 import toast from "react-hot-toast";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import {relationListService, userService} from "@lib/services/userServices.js";
-import useSearchParamChange from "@lib/hooks/useSearchParamChange.jsx";
-import {useRoomsContext} from "@lib/context/RoomsContext.jsx";
 import {useUserContext} from "@lib/context/UserContext.jsx";
 import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
 import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
-import {useWebSocketContext} from "@lib/context/WebSocketContext.jsx";
+import {useFriendshipsContext} from "@lib/context/FriendshipContext.jsx";
 
 const DefaultLayout = ({children}) => {
     const [accessToken] = useAccessToken();
     const {setUser} = useUserContext();
     const {setMemberships} = useMembershipsContext();
     const {setRelations} = useRelationsContext();
+    const {setFriendships} = useFriendshipsContext()
 
     useMemo(() => {
         const setup = async () => {
             try {
-                const [user, memberShips] = await userService();
+                const [user, memberShips, friends] = await userService();
                 const response = await relationListService();
                 setUser(user);
                 setMemberships(memberShips);
+                setFriendships(friends);
                 setRelations(response);
             } catch (error) {
                 toast.error("Loading user data failed. Please re-enter and try again.", {

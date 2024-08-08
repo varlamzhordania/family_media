@@ -19,6 +19,7 @@ import VideoPlayer from "@components/VideoPlayer/VideoPlayer.jsx";
 import {findRelationByMemberId} from "@lib/utils/relations.js";
 import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
 import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
+import {handleName} from "@lib/utils/family.js";
 
 register();
 
@@ -52,11 +53,6 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
         return likesUser.some(userId => membershipIds?.includes(userId));
     };
 
-
-    const handleName = (member) => {
-        const myRelation = findRelationByMemberId(relations, member.id)
-        return myRelation ? member.full_name + `(${myRelation.relation})` : member.full_name
-    }
 
     const handleLike = async () => {
         if (liked) {
@@ -117,7 +113,7 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
         <Card key={data?.id} sx={{overflow: "visible"}}>
             <CardHeader
                 avatar={<Avatar>{data?.author?.member?.initial_name?.toUpperCase()}</Avatar>}
-                title={handleName(data?.author?.member)}
+                title={handleName(relations, data?.author?.member)}
                 subheader={getFormattedDate(data?.created_at, {showDate: true, showTime: true})}/>
             {
                 data?.medias?.length > 0 && <Box sx={{position: "relative", height: swiperWrapperHeight,}}>

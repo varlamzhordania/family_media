@@ -71,6 +71,90 @@ class User(AbstractUser):
             return self.username[0:2]
         return f"{self.first_name[0]}{self.last_name[0]}"
 
+    def send_friend_request(self, to_user):
+        if self != to_user:
+            friendship, created = Friendship.objects.get_or_create(
+                from_user=self,
+                to_user=to_user,
+                status=Friendship.StatusChoices.REQUESTED,
+                defaults={'status': Friendship.StatusChoices.REQUESTED}
+            )
+            return created
+        return False
+
+    def accept_friend_request(self, from_user):
+        try:
+            friendship = Friendship.objects.get(
+                from_user=from_user,
+                to_user=self,
+                status=Friendship.StatusChoices.REQUESTED
+            )
+            friendship.status = Friendship.StatusChoices.ACCEPTED
+            friendship.save()
+            return True
+        except Friendship.DoesNotExist:
+            return False
+
+    def decline_friend_request(self, from_user):
+        try:
+            friendship = Friendship.objects.get(
+                from_user=from_user,
+                to_user=self,
+                status=Friendship.StatusChoices.REQUESTED
+            )
+            friendship.status = Friendship.StatusChoices.DECLINED
+            friendship.is_active = False
+            friendship.save()
+            return True
+        except Friendship.DoesNotExist:
+            return False
+
+    def remove_friend(self, friend_user):
+        Friendship.objects.filter(
+            (models.Q(from_user=self, to_user=friend_user) | models.Q(from_user=friend_user, to_user=self)),
+            status=Friendship.StatusChoices.ACCEPTED
+        ).delete()
+
+    def get_friend_requests_received(self):
+        return Friendship.objects.filter(to_user=self, status=Friendship.StatusChoices.REQUESTED)
+
+    def get_friends(self):
+        return User.objects.filter(
+            models.Q(
+                friendships_sent__to_user=self,
+                friendships_sent__status=Friendship.StatusChoices.ACCEPTED,
+                friendships_sent__is_active=True
+                ) |
+            models.Q(
+                friendships_received__from_user=self,
+                friendships_received__status=Friendship.StatusChoices.ACCEPTED,
+                friendships_received__is_active=True,
+            )
+        ).distinct()
+
+
+class Friendship(BaseModel):
+    class StatusChoices(models.TextChoices):
+        REQUESTED = 'requested', _("Requested")
+        ACCEPTED = 'accepted', _("Accepted")
+        DECLINED = 'declined', _("Declined")
+
+    from_user = models.ForeignKey(User, related_name='friendships_sent', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='friendships_received', on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=StatusChoices.choices, default=StatusChoices.REQUESTED)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['from_user', 'to_user'],
+                name='unique_friendship',
+                condition=models.Q(status='requested')
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.from_user.get_full_name} -> {self.to_user.get_full_name} ({self.status})"
+
 
 class Relation(BaseModel):
     user = models.ForeignKey(

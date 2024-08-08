@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import User, Relation
+from .models import User, Friendship, Relation
 
 
 @admin.register(User)
@@ -30,6 +30,12 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ("id", "username", "email",)
     ordering = ("id",)
+
+
+@admin.register(Friendship)
+class FriendshipAdmin(admin.ModelAdmin):
+    list_display = ("pk", "from_user", "to_user", "status", "created_at", "updated_at", "is_active",)
+    list_filter = ("status", "created_at", "updated_at", "is_active",)
 
 
 @admin.register(Relation)
