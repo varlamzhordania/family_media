@@ -1,5 +1,6 @@
 #solo
 certbot certonly --standalone -d "familyarbore.com" -d "www.familyarbore.com" -d "api.familyarbore.com" -d "ws.familyarbore.com" -d "rtc.familyarbore.com" --register-unsafely-without-email
+certbot certonly --standalone -d "familyarbore.com" -d "api.familyarbore.com" -d "ws.familyarbore.com" -d "rtc.familyarbore.com" --register-unsafely-without-email
 
 cp /etc/letsencrypt/live/familyarbore.com/privkey.pem private.key
 cp /etc/letsencrypt/live/familyarbore.com/fullchain.pem cert.crt

@@ -163,3 +163,4 @@ cython_debug/
 media
 staticfiles/
 pg/
+!frontend/src/lib
