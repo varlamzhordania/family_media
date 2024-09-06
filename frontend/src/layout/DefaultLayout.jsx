@@ -1,4 +1,4 @@
-import {useMemo} from "react";
+import {useMemo, useState} from "react";
 import SideNavigation from "@components/Navigation/SideNavigation.jsx";
 import {Container, Grid} from "@mui/material";
 import Navbar from "@components/Navbar/Navbar.jsx";
@@ -11,11 +11,16 @@ import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
 import {useFriendshipsContext} from "@lib/context/FriendshipContext.jsx";
 
 const DefaultLayout = ({children}) => {
+    const [showSidebar, setShowSidebar] = useState(false)
     const [accessToken] = useAccessToken();
     const {setUser} = useUserContext();
     const {setMemberships} = useMembershipsContext();
     const {setRelations} = useRelationsContext();
     const {setFriendships} = useFriendshipsContext()
+
+    const handleSidebar = () => {
+        setShowSidebar(prevState => !prevState)
+    }
 
     useMemo(() => {
         const setup = async () => {
@@ -40,11 +45,11 @@ const DefaultLayout = ({children}) => {
 
     return (
         <>
-            <Navbar/>
+            <Navbar open={showSidebar} handleClose={handleSidebar}/>
             <Container maxWidth="xl" sx={{marginTop: {xs: "2rem", lg: "100px", xl: "50px"}, position: "relative"}}>
                 <Grid container spacing={4} justifyContent="end">
-                    <Grid item xs={12} sm={4} md={3} lg={3} xl={2}>
-                        <SideNavigation/>
+                    <Grid item xs={12} sm={12} md={12} lg={3} xl={2}>
+                        <SideNavigation open={showSidebar} handleClose={handleSidebar}/>
                     </Grid>
                     {children}
                 </Grid>

@@ -3,11 +3,11 @@ import {
     Box,
     Card,
     CardContent,
-    CardHeader,
+    CardHeader, IconButton,
 } from "@mui/material";
 import {getAvatar, getChatName, getOpponent, updateRoomLastMessage} from "@lib/utils/chat.jsx";
-import {Diversity2} from "@mui/icons-material";
-import {VerticalStyle} from "@lib/theme/styles.js";
+import {ArrowBack, Diversity2} from "@mui/icons-material";
+import {HorizontalStyle, VerticalStyle} from "@lib/theme/styles.js";
 import {useEffect, useRef, useState} from "react";
 import {SOCKET_BASE_URL} from "@src/conf/index.js";
 import useWebSocket from "react-use-websocket";
@@ -21,7 +21,7 @@ import DeleteModal from "@components/ChatPanel/DeleteModal.jsx";
 import {useUserContext} from "@lib/context/UserContext.jsx";
 import {useRoomsContext} from "@lib/context/RoomsContext.jsx";
 
-const ChatPanel = ({selected, setSelected, height}) => {
+const ChatPanel = ({selected, setSelected, height, matches}) => {
     const {user} = useUserContext()
     const {setRooms} = useRoomsContext()
     const [accessToken] = useAccessToken()
@@ -147,6 +147,10 @@ const ChatPanel = ({selected, setSelected, height}) => {
         handleClose()
     }
 
+    const handleBack = () => {
+        setSelected(null)
+    }
+
 
     useEffect(() => {
         const action = lastJsonMessage?.action
@@ -175,15 +179,31 @@ const ChatPanel = ({selected, setSelected, height}) => {
                                                vertical: 'bottom',
                                                horizontal: 'right',
                                            }}>
+                                        <Box sx={{...HorizontalStyle, gap: 1}}>
+                                            {
+                                                matches === false &&
+                                                <IconButton onClick={handleBack}><ArrowBack/></IconButton>
+                                            }
+
+                                            <Avatar src={completeServerUrl(getAvatar(selected, user))}
+                                                    alt={selected?.title}>
+                                                <Diversity2/>
+                                            </Avatar>
+                                        </Box>
+
+                                    </Badge>
+                                    :
+                                    <Box sx={{...HorizontalStyle, gap: 3}}>
+                                        {
+                                            matches === false &&
+                                            <IconButton onClick={handleBack}><ArrowBack/></IconButton>
+                                        }
                                         <Avatar src={completeServerUrl(getAvatar(selected, user))}
                                                 alt={selected?.title}>
                                             <Diversity2/>
                                         </Avatar>
-                                    </Badge>
-                                    :
-                                    <Avatar src={completeServerUrl(getAvatar(selected, user))} alt={selected?.title}>
-                                        <Diversity2/>
-                                    </Avatar>
+                                    </Box>
+
                             }
                             title={getChatName(selected, user)}
                             titleTypographyProps={{variant: "h5", fontWeight: "bold"}}

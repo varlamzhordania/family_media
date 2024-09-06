@@ -148,6 +148,7 @@ const Form = ({id,}) => {
                                             </IconButton>
                                         </InputAdornment>
                                 }}
+                                maxRows={2}
                                 multiline
                                 fullWidth
                                 required
@@ -159,6 +160,7 @@ const Form = ({id,}) => {
                                 position: "absolute",
                                 top: "120%",
                                 right: 50,
+                                zIndex:1000
                             }}
                                  ref={emojiPickerRef}
                             >

@@ -4,7 +4,6 @@ import {
 } from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
 import {listService} from "@lib/services/postService.js";
-import RecentMessages from "@components/RecentMessages/RecentMessages.jsx";
 import FabAddPost from "@components/FabAddPost/FabAddPost.jsx";
 import {useState} from "react";
 import CommentDrawer from "@components/CommentDrawer/CommentDrawer.jsx";

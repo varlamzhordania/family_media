@@ -32,7 +32,12 @@ const ChatLists = ({selected, setSelected, height}) => {
     }, [rooms]);
 
     return (
-        <List sx={{overflow: "auto", maxHeight: height}} disablePadding>
+        <List sx={{
+            overflow: "auto",
+            height: height,
+            display: selected ? {xs: "none", lg: "block"} : "block",
+        }}
+              disablePadding>
             {
                 sortedRooms?.map((room, index) =>
                     <ChatItem key={index} selected={selected} setSelected={setSelected} data={room}/>

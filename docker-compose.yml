@@ -1,0 +1,83 @@
+services:
+  gunicorn:
+    restart: unless-stopped
+    container_name: gunicorn
+    build:
+      context: ./backend
+    volumes:
+      - ./backend/:/home/family/backend
+      - ./cert/:/home/family/cert
+    command: >
+      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn -c conf/gunicorn_conf.py core.wsgi:application"
+    expose:
+      - '8000'
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+  daphne:
+    restart: unless-stopped
+    container_name: daphne
+    build:
+      context: ./backend
+    volumes:
+      - ./backend/:/home/family/backend
+      - ./cert/:/home/family/cert
+    command: >
+      bash -c "daphne -u /var/run/django.sock -b 0.0.0.0 -p 8001 core.asgi:application"
+    expose:
+      - '8001'
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+  frontend:
+    restart: unless-stopped
+    container_name: frontend
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend:/home/family/frontend
+    ports:
+      - '3000:80'  # Exposes the frontend on port 3000
+    depends_on:
+      - gunicorn
+  nginx:
+    restart: unless-stopped
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./cert/:/home/family
+      - ./backend/static/:/home/family/backend/static
+      - ./backend/media/:/home/family/backend/media
+      - ./backend/staticfiles/:/home/family/backend/staticfiles
+    depends_on:
+      - gunicorn
+      - daphne
+      - frontend
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./pg/:/var/lib/postgresql/data
+  redis:
+    container_name: redis
+    restart: unless-stopped
+    image: redis
+    ports:
+      - '6379:6379'

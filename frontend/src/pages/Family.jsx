@@ -37,12 +37,14 @@ const Family = () => {
     return (
         <Grid item xs>
             <Grid container spacing={3}>
-                <FamilyJoin query={familyQueryset}/>
-                {familyQueryset.isLoading && <FamilyCardSkeleton/>}
-                {
-                    familyQueryset?.data?.map((item, index) => <FamilyCard data={item} query={familyQueryset}
-                                                                           key={index}/>)
-                }
+                <Grid item xs={12}>
+                    <FamilyJoin query={familyQueryset}/>
+                </Grid>
+                    {familyQueryset.isLoading && <FamilyCardSkeleton/>}
+                    {
+                        familyQueryset?.data?.map((item, index) => <FamilyCard data={item} query={familyQueryset}
+                                                                               key={index}/>)
+                    }
             </Grid>
         </Grid>
     )
@@ -102,7 +104,7 @@ const FamilyJoin = ({query}) => {
 
     return (
         <Grid item xs={12}>
-            <Box sx={{px: 1, display: "flex", justifyContent: "space-between", alignItems: "center"}}
+            <Box sx={{p: 1, display: "flex", justifyContent: "space-between", alignItems: "center",flexWrap:"wrap"}}
                  component={Paper}>
                 <Box sx={{
                     display: "flex",
@@ -123,9 +125,10 @@ const FamilyJoin = ({query}) => {
                     />
                     <Button variant={"soft"} color={"secondary"} onClick={handleJoin}>JOIN</Button>
                 </Box>
-                <Box>
-                    <Button variant={"soft"} startIcon={<Diversity1/>} onClick={handleDrawer}>BUILD YOUR OWN
-                        FAMILY </Button>
+                <Box sx={{p:1}}>
+                    <Button variant={"soft"} startIcon={<Diversity1/>} onClick={handleDrawer}>
+                        BUILD YOUR OWN FAMILY
+                    </Button>
                 </Box>
             </Box>
             <FamilyDrawer showDrawer={showDrawer} handleDrawer={handleDrawer}/>
@@ -137,7 +140,7 @@ const FamilyJoin = ({query}) => {
 
 const FamilyCardSkeleton = () => {
     return (
-        <Grid item xs={1} sm={2} md={3} lg={4}>
+        <Grid item xs={12} sm={6} md={4} lg={4}>
             <Card>
                 <CardHeader avatar={<Skeleton variant={"circular"} width={42} height={42}/>}
                             title={<Skeleton variant={"text"}/>}
@@ -197,7 +200,7 @@ const FamilyCard = ({data, query}) => {
     }
 
     return (
-        <Grid item xs={1} sm={2} md={3} lg={4} key={data.id}>
+        <Grid item xs={12} sm={6} md={4} lg={4} key={data.id}>
             <Card>
                 <CardHeader avatar={<Avatar src={data?.avatar} alt={data.name}><Diversity2/></Avatar>}
                             title={data.name}

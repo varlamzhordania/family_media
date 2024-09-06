@@ -87,15 +87,15 @@ const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo, editing, set
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (data.text === null || data.text.strip === "")
-            toast.error("Please Make Sure you have entered your comment correctly")
+        if (data.text === null || data.text.strip === "" || data.text.length === 0)
+            return toast.error("Please Make Sure you have written your text message.")
 
         try {
             const prepData = {
                 action: editing ? "edit_message" : "new_message",
-                message: data.text,
-                reply_to: replyTo ? replyTo.id : null,
-                editing: editing.id,
+                message: data?.text,
+                reply_to: replyTo ? replyTo?.id : null,
+                editing: editing?.id,
             }
             sendJsonMessage(prepData)
             setData({text: ""})
@@ -243,7 +243,6 @@ const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo, editing, set
                     placeholder={"Write your message..."}
                     onKeyDown={handleKeyPress}
                     InputProps={{
-                        maxRows: 3,
                         sx: {
                             direction: direction
                         },
@@ -261,6 +260,7 @@ const InputForm = ({selected, sendJsonMessage, replyTo, setReplyTo, editing, set
                             </IconButton>
                         </InputAdornment>),
                     }}
+                    maxRows={2}
                     autoFocus={true}
                     multiline
                     fullWidth

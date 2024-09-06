@@ -28,7 +28,6 @@ const Register = () => {
     })
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
-    const navigate = useNavigate()
 
     const handleClickShowPassword = () => {
         setShowPassword(prevState => !prevState)
@@ -63,11 +62,22 @@ const Register = () => {
 
     return (
         <Container className={"center-container"} maxWidth={"sm"}>
-            <Card sx={{boxShadow: 1}}>
+            <Card>
                 <CardHeader
-                    title={"Sign Up"}
-                    titleTypographyProps={{fontWeight: "bold", fontSize: 42, color: "primary"}}
-                    subheader={"create your account and start sharing moments."}
+                    title="Sign Up"
+                    titleTypographyProps={{
+                        fontWeight: "bold",
+                        fontSize: 42,
+                        color: "primary",
+                        textAlign: "center",
+                    }}
+                    subheader="Create your account and start sharing moments."
+                    subheaderTypographyProps={{
+                        fontSize: 16,
+                        color: "textSecondary",
+                        textAlign: "center",
+                    }}
+                    sx={{paddingBottom: 2}}
                 />
                 <CardContent>
                     <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
@@ -142,7 +152,7 @@ const Register = () => {
                         <Button variant={"soft"} type={"submit"}>
                             {loading ? <CircularProgress color={"primary"} size={25}/> : "Sign Up"}
                         </Button>
-                        <Link to={"/auth/login/"} component={RouterLink} color={"primary"}>
+                        <Link to={"/auth/login/"} component={RouterLink} color={"textSecondary"}>
                             Already have an account ? <strong>Sign in here.</strong>
                         </Link>
 

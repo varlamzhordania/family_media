@@ -1,8 +1,11 @@
 import os
-
+from oauth2_provider.settings import DEFAULTS
 from .settings import *
 
 ALLOWED_HOSTS = ["*"]
+
+DEFAULTS['ACCESS_TOKEN_EXPIRE_SECONDS'] = 1.577e7
+FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 Mb limit
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
@@ -15,17 +18,6 @@ BASE_DOMAIN = os.getenv("BASE_DOMAIN", 'http://127.0.0.1:8000')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv("DB_NAME", ),
-        'USER': os.getenv("DB_USER", ),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST': "postgres",  # Use the service name from docker-compose.yml
-        'PORT': '5432',
-    }
-}
 
 CACHES = {
     'default': {
@@ -49,6 +41,6 @@ EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_password")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 USE_HTTPS_IN_ABSOLUTE_URLS = os.getenv("USE_HTTPS_IN_ABSOLUTE_URLS", True)

@@ -77,7 +77,7 @@ const FriendsList = () => {
     return (
         <>
             <List component={Paper} dense={true} disablePadding={true}
-                  sx={{boxShadow: "card", position: "sticky", top: (theme) => theme.StickyTop}}>
+                  sx={{boxShadow: "card", position: "sticky"}}>
                 <ListItem sx={{borderBottom: "1px solid lightgrey"}}>
                     <ListItemText primary={"Friends"}
                                   primaryTypographyProps={{variant: "h5", fontWeight: "bold", color: "primary"}}/>
