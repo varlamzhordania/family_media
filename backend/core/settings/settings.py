@@ -179,7 +179,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-FRONTEND_URL = "http://localhost:5173"
+
+if os.getenv("BASE_DOMAIN"):
+    CORS_ALLOWED_ORIGINS.append(os.getenv("BASE_DOMAIN"))
+
+FRONTEND_URL = os.getenv("BASE_DOMAIN", "http://localhost:5173")
 
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailBackend',
