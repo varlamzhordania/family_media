@@ -9,9 +9,8 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 
 import os
 import django
-from django.core.asgi import get_asgi_application
+
 from core.settings.settings import DEBUG
-from core.middleware import JwtAuthMiddlewareStack
 
 if DEBUG:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings.development')
@@ -21,13 +20,14 @@ else:
     print("Manage: Django loaded up in setting mode : Production")
 
 django.setup()
-django_asgi_app = get_asgi_application()
 
-
+from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter
 from channels.auth import AuthMiddlewareStack, BaseMiddleware
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
+
+from core.middleware import JwtAuthMiddlewareStack
 
 from chat.routing import urlpatterns as chat_patterns
 from accounts.routing import urlpatterns as account_patterns
@@ -35,6 +35,8 @@ from accounts.routing import urlpatterns as account_patterns
 urlpatterns = []
 urlpatterns += chat_patterns
 urlpatterns += account_patterns
+
+django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter(
     {
