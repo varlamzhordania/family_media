@@ -34,7 +34,7 @@ services:
     env_file:
       - .env
   frontend:
-    restart: unless-stopped
+    restart: no
     container_name: frontend
     build:
       context: ./frontend
