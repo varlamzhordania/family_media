@@ -178,10 +178,9 @@ ACTIVATE_JWT = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://familyarbore.com",
 ]
 
-if os.getenv("BASE_DOMAIN"):
-    CORS_ALLOWED_ORIGINS.append(os.getenv("BASE_DOMAIN"))
 
 FRONTEND_URL = os.getenv("BASE_DOMAIN", "http://localhost:5173")
 
