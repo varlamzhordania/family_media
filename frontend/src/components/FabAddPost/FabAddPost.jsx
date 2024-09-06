@@ -19,7 +19,7 @@ import {handleError} from "@lib/utils/service.js";
 import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
 
 const FabAddPost = ({handleDrawer, showDrawer}) => {
-    const {memberShips}= useMembershipsContext()
+    const {memberships}= useMembershipsContext()
     const [family, setFamily] = useState(null)
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [coverFile, setCoverFile] = useState(null);
@@ -124,7 +124,7 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
                                     onChange={(e) => setFamily(e.target.value)}
                                     required
                                 >
-                                    {memberShips?.map(item => <MenuItem key={item.id}
+                                    {memberships?.map(item => <MenuItem key={item.id}
                                                                         value={item?.family?.id}>{item?.family?.name}</MenuItem>)}
                                 </Select>
                                 <FormHelperText>Which family this post belong ?</FormHelperText>
