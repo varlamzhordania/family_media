@@ -54,6 +54,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./cert/:/home/family
+      - ./frontend/:/home/family/frontend
       - ./backend/static/:/home/family/backend/static
       - ./backend/media/:/home/family/backend/media
       - ./backend/staticfiles/:/home/family/backend/staticfiles
