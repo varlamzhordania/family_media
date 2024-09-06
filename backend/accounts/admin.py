@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .models import User, Friendship, Relation
+from .helpers import send_email_verification
 
 
 @admin.register(User)
@@ -30,6 +31,20 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ("id", "username", "email",)
     ordering = ("id",)
+
+    actions = ["send_email_verification"]
+
+    def send_email_verification(self, request, queryset):
+        count = 0
+
+        for user in queryset:
+            if not user.email_verified:
+                send_email_verification(user)
+                count += 1
+
+        self.message_user(request, "{} emails verified".format(count))
+
+    send_email_verification.short_description = "Send email verification"
 
 
 @admin.register(Friendship)
