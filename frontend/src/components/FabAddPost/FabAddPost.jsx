@@ -10,7 +10,7 @@ import {
     TextField,
     Typography
 } from '@mui/material';
-import {Check, Close, Delete, Edit} from '@mui/icons-material';
+import {Add, Check, Close, Delete} from '@mui/icons-material';
 import {useRef, useState} from "react";
 import {createService} from "@src/lib/services/postService.js";
 import {useQueryClient} from "@tanstack/react-query";
@@ -88,7 +88,7 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
                 aria-label="Write a post"
                 onClick={handleDrawer}
             >
-                <Edit/>
+                <Add/>
             </Fab>
             <Drawer
                 open={showDrawer}

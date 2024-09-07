@@ -72,7 +72,6 @@ class UserView(APIView):
         user = request.user
         memberships = user.my_memberships.filter(is_active=True)
         friends = user.get_friends()
-        print("friends",friends)
         user_serializer = self.serializer_class(user, context={'request': request})
         memberships_serializer = FamilyMembersSerializer(memberships, many=True, context={'request': request})
         friends_serializer = PublicUserSerializer(friends, many=True, context={'request': request})

@@ -195,6 +195,8 @@ const TableItem = ({data, dataField, setData}) => {
 
         }
     }
+
+
     return (
         <Box component={"tr"} sx={{
             display: {xs: "flex", lg: "table-row"},

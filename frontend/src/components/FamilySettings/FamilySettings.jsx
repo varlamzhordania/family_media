@@ -84,7 +84,7 @@ const FamilySettings = ({family, query}) => {
 
                     <Box display={"flex"} justifyContent={"center"} alignItems={"center"} gap={2} mt={2}>
                         <Button variant={"soft"} color={"primary"} role={"button"} type={"submit"} fullWidth>
-                            Create Family
+                            Save changes
                         </Button>
                         <Button variant={"soft"} color={"dark"} fullWidth onClick={handleReset}>Cancel</Button>
                     </Box>

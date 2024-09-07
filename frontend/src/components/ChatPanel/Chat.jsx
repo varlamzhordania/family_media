@@ -181,7 +181,7 @@ const ChatMedia = ({data, isOwn}) => {
             "&:hover": {
                 bgcolor: theme => isOwn ? `${theme.palette.primary.main}50` : "grey.dark",
             }
-        }} component={"a"} href={url} download color={"black"}>
+        }} component={"a"} href={url} target={"_blank"} download color={"black"}>
             <Box sx={{
                 width: "64px",
                 height: "64px",

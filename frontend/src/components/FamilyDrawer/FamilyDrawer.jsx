@@ -18,9 +18,10 @@ const FamilyDrawer = ({showDrawer, handleDrawer}) => {
         e.preventDefault()
         try {
             const prepData = JSON.stringify(data)
-            const {id} = await createService(prepData)
+            const response = await createService(prepData)
+            console.log(response)
             toast.success("You Family Journey Started.")
-            navigate(`/family/${id}/`)
+            navigate(`/family/${response?.id}/`)
         } catch (error) {
             toast.error(error.detail || "Operation failed.\nPlease try later.")
         }

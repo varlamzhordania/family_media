@@ -54,7 +54,7 @@ export const getLastMessage = (data) => {
 
 export const showMessageNotification = (messageData) => {
     toast(
-        <Box component={Link} to={`/message/?room=${messageData.room}`} sx={{textDecoration: "none",width:"100%"}}>
+        <Box component={Link} to={`/message/?room=${messageData.room}`} sx={{textDecoration: "none", width: "100%"}}>
             <Typography fontWeight={"bold"} variant={"subtitle1"} color={"primary"}>
                 New Message
             </Typography>
@@ -64,8 +64,9 @@ export const showMessageNotification = (messageData) => {
         </Box>,
         {
             duration: 5000,
+            id: `notification-${messageData.id}`,
             style: {
-                minWidth: "150px",
+                minWidth: "200px",
                 border: '1px solid #009688',
                 padding: '4px',
             },

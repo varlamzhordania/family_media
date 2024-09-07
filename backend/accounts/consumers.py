@@ -97,7 +97,7 @@ class UserConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def update_user_status(self, online):
         self.user.is_online = online
-        self.user.save()
+        self.user.save(update_fields=["is_online"])
 
     @database_sync_to_async
     def get_room_list(self):
