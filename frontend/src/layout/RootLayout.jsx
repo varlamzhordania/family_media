@@ -4,11 +4,14 @@ import {ThemeProvider} from "@mui/material";
 import {Toaster} from "react-hot-toast";
 import {LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
+import {Suspense} from "react";
+import Loader from "@components/Loader/Loader.jsx";
 
 const RootLayout = ({children}) => {
     const [theme, colorMode] = useMode();
 
     return (
+        <Suspense fallback={<Loader />}>
             <ColorModeContext.Provider value={colorMode}>
                 <ThemeProvider theme={theme}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -18,6 +21,7 @@ const RootLayout = ({children}) => {
                     </LocalizationProvider>
                 </ThemeProvider>
             </ColorModeContext.Provider>
+        </Suspense>
     )
 }
 

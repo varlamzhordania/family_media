@@ -46,7 +46,6 @@ const FriendsList = () => {
         setAnchorEl(null);
     };
     const handleDm = () => {
-        console.log(selectedMember)
         navigate(`/message/?dm=${selectedMember.id}`)
     }
     const handleRelationModal = () => {
@@ -79,7 +78,7 @@ const FriendsList = () => {
             <List component={Paper} dense={true} disablePadding={true}
                   sx={{boxShadow: "card", position: "sticky"}}>
                 <ListItem sx={{borderBottom: "1px solid lightgrey"}}>
-                    <ListItemText primary={"Friends"}
+                    <ListItemText primary={"Families"}
                                   primaryTypographyProps={{variant: "h5", fontWeight: "bold", color: "primary"}}/>
                 </ListItem>
 

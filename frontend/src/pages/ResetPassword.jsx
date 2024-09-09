@@ -61,47 +61,45 @@ const ResetPassword = () => {
     }
 
     return (
-        <Container className={"center-container"} maxWidth={"sm"}>
-            <Card sx={{boxShadow: 1}}>
-                <CardHeader
-                    title={"Reset Password"}
-                    titleTypographyProps={{fontWeight: "bold", fontSize: 42, color: "primary"}}
-                />
-                <CardContent>
-                    <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
-                        <TextField type={showPassword ? "text" : "password"} id={"id_password"} name={"new_password"}
-                                   placeholder={"********"}
-                                   label={"Password"}
-                                   fullWidth
-                                   required
-                                   onChange={handleChange}
-                                   value={data.new_password}
-                                   InputProps={{
-                                       endAdornment:
-                                           <InputAdornment position="end">
-                                               <IconButton
-                                                   aria-label="toggle password visibility"
-                                                   onClick={handleClickShowPassword}
-                                                   edge="end"
-                                               >
-                                                   {showPassword ? <VisibilityOff/> : <Visibility/>}
-                                               </IconButton>
-                                           </InputAdornment>
-                                   }}
-                        />
-                        <Button variant={"soft"} endIcon={<Send/>} type={"submit"}>
-                            {loading ? <CircularProgress color={"primary"} size={25}/> : "Reset"}
-                        </Button>
-                        <Button variant={"soft"} color={"grey"} type={"submit"}
-                                onClick={() => navigate("/auth/login/")}
-                                endIcon={<Login/>}
-                        >
-                            back
-                        </Button>
-                    </Box>
-                </CardContent>
-            </Card>
-        </Container>
+        <Card elevation={0}>
+            <CardHeader
+                title={"Reset Password"}
+                titleTypographyProps={{fontWeight: "bold", fontSize: 42, color: "primary"}}
+            />
+            <CardContent>
+                <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
+                    <TextField type={showPassword ? "text" : "password"} id={"id_password"} name={"new_password"}
+                               placeholder={"********"}
+                               label={"Password"}
+                               fullWidth
+                               required
+                               onChange={handleChange}
+                               value={data.new_password}
+                               InputProps={{
+                                   endAdornment:
+                                       <InputAdornment position="end">
+                                           <IconButton
+                                               aria-label="toggle password visibility"
+                                               onClick={handleClickShowPassword}
+                                               edge="end"
+                                           >
+                                               {showPassword ? <VisibilityOff/> : <Visibility/>}
+                                           </IconButton>
+                                       </InputAdornment>
+                               }}
+                    />
+                    <Button variant={"soft"} endIcon={<Send/>} type={"submit"}>
+                        {loading ? <CircularProgress color={"primary"} size={25}/> : "Reset"}
+                    </Button>
+                    <Button variant={"soft"} color={"grey"} type={"submit"}
+                            onClick={() => navigate("/auth/login/")}
+                            endIcon={<Login/>}
+                    >
+                        back
+                    </Button>
+                </Box>
+            </CardContent>
+        </Card>
     )
 
 }

@@ -75,81 +75,79 @@ const Login = () => {
     }
 
     return (
-        <Container className={"center-container"} maxWidth={"sm"}>
-            <Card>
-                <CardHeader
-                    title="Sign In"
-                    titleTypographyProps={{
-                        fontWeight: "bold",
-                        fontSize: 42,
-                        color: "primary",
-                        textAlign: "center",
-                    }}
-                    subheader="Sign in to your account to continue."
-                    subheaderTypographyProps={{
-                        fontSize: 16,
-                        color: "textSecondary",
-                        textAlign: "center",
-                    }}
-                    sx={{paddingBottom: 2}}
-                />
+        <Card elevation={0}>
+            <CardHeader
+                title="Sign In"
+                titleTypographyProps={{
+                    fontWeight: "bold",
+                    fontSize: 42,
+                    color: "primary",
+                    textAlign: "center",
+                }}
+                subheader="Sign in to your account to continue."
+                subheaderTypographyProps={{
+                    fontSize: 16,
+                    color: "textSecondary",
+                    textAlign: "center",
+                }}
+                sx={{paddingBottom: 2}}
+            />
 
-                <CardContent>
-                    <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
-                        <TextField type={"email"} id={"id_email"} name={"email"} label={"Email"}
-                                   placeholder={"Write your email address here..."}
-                                   fullWidth inputRef={emailRef} error={errors.email}
-                                   helperText={errorMessages.email}
-                                   required
-                        />
-                        <TextField type={showPassword ? "text" : "password"} id={"id_password"} name={"password"}
-                                   placeholder={"********"}
-                                   label={"Password"}
-                                   inputRef={passwordRef}
-                                   fullWidth
-                                   error={errors.password}
-                                   helperText={errorMessages.password}
-                                   required
-                                   InputProps={{
-                                       endAdornment:
-                                           <InputAdornment position="end">
-                                               <IconButton
-                                                   aria-label="toggle password visibility"
-                                                   onClick={handleClickShowPassword}
-                                                   edge="end"
-                                               >
-                                                   {showPassword ? <VisibilityOff/> : <Visibility/>}
-                                               </IconButton>
-                                           </InputAdornment>
-                                   }}
-                        />
-                        <Link to={"/auth/forget-password/"} component={RouterLink} color={"textSecondary"}>
-                            forget your password ?
-                        </Link>
-                        <Button variant={"soft"} type={"submit"}>
-                            {loading ? <CircularProgress color={"primary"} size={25}/> : "Sign In"}
+            <CardContent>
+                <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
+                    <TextField type={"email"} id={"id_email"} name={"email"} label={"Email"}
+                               placeholder={"Write your email address here..."}
+                               fullWidth inputRef={emailRef} error={errors.email}
+                               helperText={errorMessages.email}
+                               required
+                    />
+                    <TextField type={showPassword ? "text" : "password"} id={"id_password"} name={"password"}
+                               placeholder={"********"}
+                               label={"Password"}
+                               inputRef={passwordRef}
+                               fullWidth
+                               error={errors.password}
+                               helperText={errorMessages.password}
+                               required
+                               InputProps={{
+                                   endAdornment:
+                                       <InputAdornment position="end">
+                                           <IconButton
+                                               aria-label="toggle password visibility"
+                                               onClick={handleClickShowPassword}
+                                               edge="end"
+                                           >
+                                               {showPassword ? <VisibilityOff/> : <Visibility/>}
+                                           </IconButton>
+                                       </InputAdornment>
+                               }}
+                    />
+                    <Link to={"/auth/forget-password/"} component={RouterLink} color={"textSecondary"}>
+                        forget your password ?
+                    </Link>
+                    <Button variant={"soft"} type={"submit"}>
+                        {loading ? <CircularProgress color={"primary"} size={25}/> : "Sign In"}
+                    </Button>
+                    <Divider>OR</Divider>
+                    <Box sx={{maxWidth: "450px"}}>
+                        <Button variant={"soft"} color={"grey"} fullWidth
+                                sx={{justifyContent: "flex-start", textTransform: "unset"}}>
+                            <Google sx={{mx: 1}}/>
+                            <Typography variant={"body1"} fontWeight={"bold"}>Continue with Google</Typography>
                         </Button>
-                        <Divider>OR</Divider>
-                        <Box sx={{maxWidth: "450px"}}>
-                            <Button variant={"soft"} color={"grey"} fullWidth
-                                    sx={{justifyContent: "flex-start", textTransform: "unset"}}>
-                                <Google sx={{mx: 1}}/>
-                                <Typography variant={"body1"} fontWeight={"bold"}>Continue with Google</Typography>
-                            </Button>
-                            <Button variant={"soft"} color={"grey"} fullWidth
-                                    sx={{my: 2, justifyContent: "flex-start", textTransform: "unset"}}>
-                                <Facebook sx={{mx: 1}}/>
-                                <Typography variant={"body1"} fontWeight={"bold"}>Continue with Facebook</Typography>
-                            </Button>
-                        </Box>
-                        <Link to={"/auth/register/"} component={RouterLink} color={"textSecondary"}>
-                            Dont have an account ? <strong>create one here.</strong>
-                        </Link>
-
+                        <Button variant={"soft"} color={"grey"} fullWidth
+                                sx={{my: 2, justifyContent: "flex-start", textTransform: "unset"}}>
+                            <Facebook sx={{mx: 1}}/>
+                            <Typography variant={"body1"} fontWeight={"bold"}>Continue with Facebook</Typography>
+                        </Button>
                     </Box>
-                </CardContent>
-            </Card>
-        </Container>
+                    <Link to={"/auth/register/"} component={RouterLink} color={"textSecondary"}>
+                        Dont have an account ? <strong>create one here.</strong>
+                    </Link>
+
+                </Box>
+            </CardContent>
+        </Card>
     )
 }
 

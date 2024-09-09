@@ -43,7 +43,7 @@ const SideNavigation = ({open, handleClose}) => {
     if (matches)
         return (
             <Box sx={{...VerticalStyle}}>
-                <Logo variant={"h4"} />
+                <Logo variant={"h5"} />
                 <List sx={{padding: 0, position: "sticky", width: "100%"}}>
                     {routes.map((route, index) => (
                         <ListItem key={index} sx={{padding: 0, paddingBottom: 2}}>
@@ -75,7 +75,7 @@ const SideNavigation = ({open, handleClose}) => {
             }
         }}>
             <Box sx={{...VerticalStyle, justifyContent: "flex-start", alignItems: "center", height: "100%", px: 2}}>
-                <Logo flexGrow={0}/>
+                <Logo flexGrow={0} variant={"h5"}/>
                 {routes.map((route, index) => (
                     <ListItem key={index} sx={{padding: 0,}}>
                         <ListItemButton sx={buttonStyle} component={Link} to={route.href}>

@@ -1,17 +1,22 @@
 import {createBrowserRouter} from "react-router-dom";
+import {lazy} from "react";
 import RootLayout from "@layout/RootLayout.jsx";
-import Login from "@pages/Login.jsx";
+import AuthLayout from "@layout/AuthLayout.jsx";
 import ErrorPage from "@pages/Error.jsx";
-import RootPage from "@pages/Root.jsx";
-import Home from "@pages/Home.jsx";
-import Account from "@pages/Account.jsx";
-import Family from "@pages/Family.jsx";
-import FamilyDashboard from "@pages/FamilyDashboard.jsx";
-import Register from "@pages/Register.jsx";
-import Invitation from "@pages/Invitation.jsx";
-import ForgetPassword from "@pages/ForgetPassword.jsx";
-import ResetPassword from "@pages/ResetPassword.jsx";
-import Message from "@pages/Message.jsx";
+import Loader from "@components/Loader/Loader.jsx";
+
+// Lazy load the components
+const Login = lazy(() => import("@pages/Login.jsx"));
+const Register = lazy(() => import("@pages/Register.jsx"));
+const ForgetPassword = lazy(() => import("@pages/ForgetPassword.jsx"));
+const ResetPassword = lazy(() => import("@pages/ResetPassword.jsx"));
+const RootPage = lazy(() => import("@pages/Root.jsx"));
+const Home = lazy(() => import("@pages/Home.jsx"));
+const Account = lazy(() => import("@pages/Account.jsx"));
+const Family = lazy(() => import("@pages/Family.jsx"));
+const FamilyDashboard = lazy(() => import("@pages/FamilyDashboard.jsx"));
+const Invitation = lazy(() => import("@pages/Invitation.jsx"));
+const Message = lazy(() => import("@pages/Message.jsx"));
 
 export const router = createBrowserRouter([
     {
@@ -49,22 +54,32 @@ export const router = createBrowserRouter([
                     }
                 ]
             },
+            // {
+            //     path: "/loader",
+            //     element: <Loader/>,
+            // },
             {
-                path: "/auth/login/",
-                element: <RootLayout><Login/></RootLayout>,
-            },
-            {
-                path: "/auth/register/",
-                element: <RootLayout><Register/></RootLayout>,
-            },
-            {
-                path: "/auth/forget-password/",
-                element: <RootLayout><ForgetPassword/></RootLayout>,
-            },
-            {
-                path: "/auth/reset-password/:uid/:token/",
-                element: <RootLayout><ResetPassword/></RootLayout>,
-            },
+                path: "/auth/",
+                element: null,
+                children: [
+                    {
+                        path: "/auth/login/",
+                        element: <AuthLayout><Login/></AuthLayout>,
+                    },
+                    {
+                        path: "/auth/register/",
+                        element: <AuthLayout><Register/></AuthLayout>,
+                    },
+                    {
+                        path: "/auth/forget-password/",
+                        element: <AuthLayout><ForgetPassword/></AuthLayout>,
+                    },
+                    {
+                        path: "/auth/reset-password/:uid/:token/",
+                        element: <AuthLayout><ResetPassword/></AuthLayout>,
+                    },
+                ]
+            }
         ]
     },
 ]);

@@ -61,8 +61,7 @@ const Register = () => {
 
 
     return (
-        <Container className={"center-container"} maxWidth={"sm"}>
-            <Card>
+            <Card elevation={0}>
                 <CardHeader
                     title="Sign Up"
                     titleTypographyProps={{
@@ -159,7 +158,6 @@ const Register = () => {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
     )
 }
 

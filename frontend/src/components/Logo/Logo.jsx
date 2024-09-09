@@ -1,6 +1,6 @@
 import {Box, Typography} from "@mui/material";
 
-const Logo = ({flexGrow = 1, variant = "h4", text = "Family"}) => {
+const Logo = ({flexGrow = 1, variant = "h4", text = "Family Arbore"}) => {
     return (
         <Box sx={{
             display: "flex",
@@ -9,8 +9,8 @@ const Logo = ({flexGrow = 1, variant = "h4", text = "Family"}) => {
             gap: 2,
             flexGrow: flexGrow,
         }}>
-            <img src={"/logo2.jpg"} alt={"logo"} className={"logo"}/>
-            <Typography variant={variant} component={"h1"} fontWeight={600} color={"primary"}>
+            <img src={"/logo2edited.jpg"} alt={"logo"} className={"logo"}/>
+            <Typography variant={variant} component={"h1"} fontWeight={600} color={"primary"} noWrap>
                 {text}
             </Typography>
         </Box>

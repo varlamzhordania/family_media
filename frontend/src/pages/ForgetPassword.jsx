@@ -39,33 +39,31 @@ const ForgetPassword = () => {
     }
 
     return (
-        <Container className={"center-container"} maxWidth={"sm"}>
-            <Card sx={{boxShadow: 1}}>
-                <CardHeader
-                    title={"Forget Password"}
-                    titleTypographyProps={{fontWeight: "bold", fontSize: 42, color: "primary"}}
-                />
-                <CardContent>
-                    <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
-                        <TextField type={"email"} id={"id_email"} name={"email"} label={"Email"}
-                                   placeholder={"Write your email address here..."}
-                                   fullWidth inputRef={emailRef}
-                                   autoComplete={"off"}
-                                   required
-                        />
-                        <Button variant={"soft"} endIcon={<Send/>} type={"submit"}>
-                            {loading ? <CircularProgress color={"primary"} size={25}/> : "Send Email"}
-                        </Button>
-                        <Button variant={"soft"} color={"grey"} type={"submit"}
-                                onClick={() => navigate("/auth/login/")}
-                                endIcon={<Login/>}
-                        >
-                            back
-                        </Button>
-                    </Box>
-                </CardContent>
-            </Card>
-        </Container>
+        <Card elevation={0}>
+            <CardHeader
+                title={"Forget Password"}
+                titleTypographyProps={{fontWeight: "bold", fontSize: 42, color: "primary"}}
+            />
+            <CardContent>
+                <Box sx={boxStyles} component={"form"} onSubmit={handleSubmit}>
+                    <TextField type={"email"} id={"id_email"} name={"email"} label={"Email"}
+                               placeholder={"Write your email address here..."}
+                               fullWidth inputRef={emailRef}
+                               autoComplete={"off"}
+                               required
+                    />
+                    <Button variant={"soft"} endIcon={<Send/>} type={"submit"}>
+                        {loading ? <CircularProgress color={"primary"} size={25}/> : "Send Email"}
+                    </Button>
+                    <Button variant={"soft"} color={"grey"} type={"submit"}
+                            onClick={() => navigate("/auth/login/")}
+                            endIcon={<Login/>}
+                    >
+                        back
+                    </Button>
+                </Box>
+            </CardContent>
+        </Card>
     )
 
 }

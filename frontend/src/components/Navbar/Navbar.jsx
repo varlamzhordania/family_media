@@ -21,7 +21,7 @@ const Navbar = ({open, handleClose}) => {
             <AppBar position="static" sx={{backgroundColor: "background.main"}}>
                 <Toolbar>
                     <Container maxWidth={"xl"} sx={{display: "flex", alignItems: "end"}}>
-                        <Logo/>
+                        <Logo variant={"h4"}/>
                         <Box>
                             <IconButton onClick={handleClose}>
                                 <Menu sx={{fontSize: "34px"}}/>

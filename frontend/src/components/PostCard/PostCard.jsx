@@ -16,7 +16,6 @@ import {getFormattedDate} from "@lib/utils/times.js";
 import {Favorite, FavoriteBorder, ModeCommentOutlined, NavigateBefore, NavigateNext} from "@mui/icons-material";
 import {register} from 'swiper/element/bundle';
 import VideoPlayer from "@components/VideoPlayer/VideoPlayer.jsx";
-import {findRelationByMemberId} from "@lib/utils/relations.js";
 import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
 import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
 import {handleName} from "@lib/utils/family.js";
@@ -52,6 +51,10 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
         const membershipIds = memberShips?.map(member => member?.id);
         return likesUser.some(userId => membershipIds?.includes(userId));
     };
+
+    const getAlt = () => {
+        return data?.text?.length > 15 ? data?.text?.substr(0, 15) + "..." : data?.text
+    }
 
 
     const handleLike = async () => {
@@ -130,11 +133,13 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
                                             backgroundColor: "#222"
                                         }}
                                         component={getComponent(item.file)}
-
+                                        alt={getAlt() + `, format:${getComponent(item.file)} index=${index}`}
                                         play={"false"}
                                         loading="lazy"
-                                        src={item.file || "/default-picture.png"}
-                                    /> : <VideoPlayer src={item.file} cardStyle={swiperWrapperHeight}/>
+                                        image={item.file || "/default-picture.png"}
+                                    /> : <VideoPlayer src={item.file}
+                                                      alt={item?.text?.length > 15 ? item?.text?.substr(0, 15) + "..." : item?.text}
+                                                      cardStyle={swiperWrapperHeight}/>
                                 }
                             </swiper-slide>
                         )}
