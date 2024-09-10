@@ -86,10 +86,12 @@ class InvitationView(APIView):
         user = request.user
         data = request.data.copy()
         family_id = data.get("family")
-        email = data.get("email")
+        target = data.get("target")
+        service = data.get("service", Invitation.ServicesChoices.EMAIL)
+        expire = data.get("expire", None)
 
-        if not family_id or not email:
-            return Response({"detail": "Family ID and email are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not family_id or not target:
+            return Response({"detail": "Family ID and target are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             family = Family.objects.get(pk=family_id, is_active=True, members__in=[user])
@@ -98,38 +100,28 @@ class InvitationView(APIView):
             invitation = Invitation.objects.create(
                 family_id=family.id,
                 invited_by=family_member,
-                send_to_email=email
+                service=service,
+                target=target
             )
+            if expire is not None:
+                invitation.set_expire_date(int(expire))
             invitation.set_invitation_code()
 
-            email_subject = _(f"Invitation to Join the {family.name} Family")
-            email_body = f"""
-                Dear {email},
+            if service == Invitation.ServicesChoices.EMAIL:
+                return self.send_email(invitation)
+            elif service == Invitation.ServicesChoices.SMS:
+                return self.send_sms(invitation)
+            elif service == Invitation.ServicesChoices.TELEGRAM:
+                return self.send_telegram(invitation)
+            elif service == Invitation.ServicesChoices.WHATSAPP:
+                return self.send_whatsapp(invitation)
+            elif service == Invitation.ServicesChoices.TWITTER:
+                return self.send_twitter(invitation)
+            else:
+                return self.service_not_available(invitation)
 
-                You have been cordially invited to join the {family.name} family.
-
-                Please click on the link below to accept the invitation and join our family:
-                {settings.FRONTEND_URL}/invitations/{invitation.invitation_code}/
-
-                This invitation link will expire after 2 Hour.
-
-                We look forward to welcoming you to our family.
-
-                Best regards,
-                The {family.name} Family
-            """
-
-            send_mail(
-                subject=email_subject,
-                message=email_body,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[email],
-                fail_silently=False,
-            )
-
-            return Response({"message": "Invitation sent successfully."}, status=status.HTTP_200_OK)
         except FamilyMembers.DoesNotExist:
-            return Response({'detail': 'You are not a member of this family.'}, status=status)
+            return Response({'detail': 'You are not a member of this family.'}, status=status.HTTP_403_FORBIDDEN)
         except Family.DoesNotExist:
             return Response(
                 {"detail": "Family with the given ID not found or access denied."},
@@ -138,3 +130,50 @@ class InvitationView(APIView):
         except Exception as e:
             print(e)
             return Response({"detail": f"An unexpected error occurred"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def service_not_available(self, invitation: Invitation):
+        return Response(
+            {"detail": f"Service {invitation.service} not available. Please try another service."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def send_email(self, invitation: Invitation):
+        family = invitation.family
+        expire_text = f"This invitation link will expire after {invitation.expire_hour} hour. \n" if invitation.expires_at else ""
+        email_subject = _(f"Invitation to Join the {family.name} Family")
+        email_body = f"""
+            Dear {invitation.target},
+
+            You have been cordially invited to join the {family.name} family.
+
+            Please click on the link below to accept the invitation and join our family:
+            {settings.FRONTEND_URL}/invitations/{invitation.invitation_code}/
+
+            {expire_text}
+            Best regards,
+            The {family.name} Family
+        """
+
+        send_mail(
+            subject=email_subject,
+            message=email_body,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[invitation.target],
+            fail_silently=False,
+        )
+        return Response(
+            {"message": f"Invitation sent successfully via {invitation.service}."},
+            status=status.HTTP_200_OK
+        )
+
+    def send_sms(self, invitation: Invitation):
+        return self.service_not_available(invitation)
+
+    def send_telegram(self, invitation: Invitation):
+        return self.service_not_available(invitation)
+
+    def send_whatsapp(self, invitation: Invitation):
+        return self.service_not_available(invitation)
+
+    def send_twitter(self, invitation: Invitation):
+        return self.service_not_available(invitation)

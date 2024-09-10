@@ -33,6 +33,13 @@ class Event(BaseModel):
 
 
 class Invitation(BaseModel):
+    class ServicesChoices(models.TextChoices):
+        EMAIL = "email", _("Email")
+        SMS = "sms", _("SMS")
+        TELEGRAM = "telegram", _("Telegram")
+        WHATSAPP = "whatsapp", _("WhatsApp")
+        TWITTER = "twitter", _("Twitter")
+
     family = models.ForeignKey(
         Family,
         on_delete=models.CASCADE,
@@ -49,8 +56,15 @@ class Invitation(BaseModel):
         blank=False,
         null=False
     )
-    send_to_email = models.EmailField(verbose_name=_("Send To Email"), blank=True, null=True)
-    send_to_phone_number = PhoneNumberField(verbose_name=_("Send To Phone Number"), blank=True, null=True)
+    service = models.CharField(
+        max_length=30,
+        choices=ServicesChoices.choices,
+        default=ServicesChoices.EMAIL,
+        verbose_name=_("Service"),
+        blank=False,
+        null=False
+    )
+    target = models.CharField(max_length=255, verbose_name=_("Target"), blank=True, null=True)
     invitation_code = models.CharField(
         max_length=32,
         unique=True,
@@ -59,6 +73,7 @@ class Invitation(BaseModel):
         null=True,
     )
     expires_at = models.DateTimeField(verbose_name=_("Expiration Date"), blank=True, null=True)
+    expire_hour = models.IntegerField(verbose_name=_("Expire Hour"), blank=True, null=True)
 
     class Meta:
         verbose_name = _("Invitation")
@@ -68,14 +83,13 @@ class Invitation(BaseModel):
     def __str__(self):
         return f"{self.id} - {self.family.name} - {self.invitation_code}"
 
-    def set_expire_date(self):
-        hours = 2
+    def set_expire_date(self, hours: int = 2):
         self.expires_at = timezone.now() + timezone.timedelta(hours=hours)
-        self.save()
+        self.expire_hour = hours
+        self.save(update_fields=["expires_at", "expire_hour"])
         return self.expires_at
 
     def set_invitation_code(self):
         self.invitation_code = get_random_string(32, "QWERTYUIOPASDFGHJKLZXCVBNM123456789")
-        self.set_expire_date()
-        self.save()
+        self.save(update_fields=["invitation_code"])
         return self.invitation_code

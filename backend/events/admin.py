@@ -15,7 +15,7 @@ class EventAdmin(admin.ModelAdmin):
 @admin.register(Invitation)
 class InvitationAdmin(admin.ModelAdmin):
     list_display = (
-        "pk", "family", "invited_by", "send_to_phone_number", "expires_at", "created_at", "updated_at", "is_active",
+        "pk", "family", "invited_by", "service", "target", "expires_at", "created_at", "updated_at", "is_active",
     )
     list_filter = ("expires_at", "created_at", "updated_at", "is_active",)
-    search_fields = ("pk", "invitation_code",)
+    search_fields = ("target", "invitation_code",)

@@ -114,7 +114,7 @@ const FriendsList = () => {
                 {
                     requestsQuery?.data?.length === 0 && <ListItem sx={{px: 0}}>
                         <ListItemButton>
-                            <ListItemText primary={"You have 0 friend request."}
+                            <ListItemText primary={"You have 0 request."}
                                           primaryTypographyProps={{textAlign: "center", variant: "subtitle2"}}/>
                         </ListItemButton>
                     </ListItem>
