@@ -4,9 +4,10 @@ export const getFormattedDate = (date = null, options = {}) => {
     const {
         showDate = true,
         showTime = false,
-        locale = navigator.language || "en",  // Use system locale or fallback to "en"
+        locale = navigator.language || "en-US",  // Use system locale or fallback to "en"
         dateOptions = {year: "numeric", month: "long", day: "2-digit"},
-        timeOptions = {hour: "2-digit", minute: "2-digit"}
+        timeOptions = {hour: "2-digit", minute: "2-digit"},
+        isUTC = false  // New option to handle UTC dates, default is false for backward compatibility
     } = options;
 
     const dateTimeFormatOptions = {};
@@ -19,8 +20,19 @@ export const getFormattedDate = (date = null, options = {}) => {
         Object.assign(dateTimeFormatOptions, timeOptions);
     }
 
-    return Intl.DateTimeFormat(locale, dateTimeFormatOptions).format(new Date(date));
+    let parsedDate;
+
+    if (isUTC) {
+        // Parse the date as UTC if isUTC is true
+        parsedDate = new Date(date + 'Z');
+    } else {
+        // Parse as a normal local date
+        parsedDate = new Date(date);
+    }
+
+    return Intl.DateTimeFormat(locale, dateTimeFormatOptions).format(parsedDate);
 };
+
 
 export const formatDateForDjango = (date = null, options = {}) => {
     if (!date) return null;

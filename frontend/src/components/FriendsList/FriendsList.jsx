@@ -85,7 +85,7 @@ const FriendsList = () => {
                 {
                     friendships.length === 0 && <ListItem sx={{px: 0}}>
                         <ListItemButton>
-                            <ListItemText primary={"Your friend list is empty."}
+                            <ListItemText primary={"Your family list is empty."}
                                           primaryTypographyProps={{textAlign: "center", variant: "subtitle2"}}/>
                         </ListItemButton>
                     </ListItem>
@@ -97,7 +97,7 @@ const FriendsList = () => {
                             <ListItemIcon sx={{minWidth: 40}}>
                                 <Avatar sx={{width: 32, height: 32}} src={item.avatar}>{item.initial_name}</Avatar>
                             </ListItemIcon>
-                            <ListItemText primary={handleName(relations,item)}/>
+                            <ListItemText primary={handleName(relations, item)}/>
                         </ListItemButton>
                         <ListItemSecondaryAction>
                             <IconButton onClick={(e) => handleMenu(e, item)}>
@@ -174,7 +174,7 @@ const FriendsList = () => {
 
     )
 }
-const FriendMenuItems = ({user, selectedMember,handleClose}) => {
+const FriendMenuItems = ({user, selectedMember, handleClose}) => {
     const {friendships, setFriendships} = useFriendshipsContext()
     const handleAddFriend = async () => {
         try {

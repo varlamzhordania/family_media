@@ -40,7 +40,7 @@ const FamilyDashboard = () => {
 
 
     return (
-        <Grid item xs sm={8} md={9} lg={9} xl={10} pb={4}>
+        <Grid item xs sm={12} md={9} lg={9} xl={10} pb={4}>
             <BackLink href={"/family/"}/>
             <Grid container spacing={3}>
                 <Grid item xs={12}>
@@ -57,13 +57,13 @@ const FamilyDashboard = () => {
                 </Grid>
                 <Grid item xs={12} sm={12} md={12} lg={5} xl={4} order={{xs: 1, lg: 2}}>
                     <Grid container spacing={2}>
-                        <Grid item xs md={6} lg={12}>
+                        <Grid item xs={12} md={12} lg={12}>
                             <FamilyMembers family={id} query={familyQuery}/>
                         </Grid>
-                        <Grid item xs sm md={6} lg={12}>
+                        <Grid item xs={12} sm md={6} lg={12}>
                             <FamilyCode family={id} query={familyQuery}/>
                         </Grid>
-                        <Grid item xs sm md={12} lg={12}>
+                        <Grid item xs={12} sm md={6} lg={12}>
                             <FamilyEvents family={id}/>
                         </Grid>
                     </Grid>

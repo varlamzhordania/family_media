@@ -24,7 +24,7 @@ import {handleError} from "@lib/utils/service.js";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import {havePermission} from "@lib/utils/family.js";
-import {ModalStyle} from "@lib/theme/styles.js";
+import {HorizontalStyle, ModalStyle} from "@lib/theme/styles.js";
 import {useUserContext} from "@lib/context/UserContext.jsx";
 
 
@@ -149,19 +149,19 @@ const TreeModal = ({
                 }
                 <CardActions>
                     {
-                        !showForm && <>
-                            <Button variant={"soft"} startIcon={<Add/>} onClick={handleShowForm} fullWidth>
+                        !showForm && <Box sx={{...HorizontalStyle,width:"100%",flexWrap:"wrap",}}>
+                            <Button variant={"soft"} startIcon={<Add/>} onClick={handleShowForm} >
                                 Add Children
                             </Button>
                             {
-                                selectedNode && <>
+                                selectedNode && <Box sx={{...HorizontalStyle,}}>
                                     <Button variant={"soft"} color={"info"} startIcon={<Edit/>}
-                                            onClick={handleEdit} fullWidth>Edit</Button>
+                                            onClick={handleEdit}>Edit</Button>
                                     <Button variant={"soft"} color={"error"} startIcon={<Delete/>}
-                                            onClick={handleDelete} fullWidth>Delete</Button>
-                                </>
+                                            onClick={handleDelete}>Delete</Button>
+                                </Box>
                             }
-                        </>
+                        </Box>
                     }
 
                 </CardActions>
@@ -259,16 +259,16 @@ const FormCardContent = ({selectedNode, handleShowForm, handleModal, family, que
                 />
                 {
                     data?.date_of_birth ? <DatePicker label={"Date of Birth"}
-                                            name={"date_of_birth"}
-                                            sx={{mb: 2, width: "100%"}}
-                                            value={dayjs(data?.date_of_birth)}
-                                            onChange={(newValue) => setData(prevState => ({
-                                                ...prevState,
-                                                date_of_birth: formatDateForDjango(newValue, {
-                                                    showTime: false,
-                                                    useMidnight: false
-                                                })
-                                            }))}
+                                                      name={"date_of_birth"}
+                                                      sx={{mb: 2, width: "100%"}}
+                                                      value={dayjs(data?.date_of_birth)}
+                                                      onChange={(newValue) => setData(prevState => ({
+                                                          ...prevState,
+                                                          date_of_birth: formatDateForDjango(newValue, {
+                                                              showTime: false,
+                                                              useMidnight: false
+                                                          })
+                                                      }))}
                         /> :
                         <DatePicker label={"Date of Birth"}
                                     name={"date_of_birth"}
@@ -284,15 +284,16 @@ const FormCardContent = ({selectedNode, handleShowForm, handleModal, family, que
                 }
                 {
                     data?.date_of_death ? <DatePicker label={"Date of Death"}
-                                            name={"date_of_death"}
-                                            sx={{mb: 2, width: "100%"}}
-                                            onChange={(newValue) => setData(prevState => ({
-                                                ...prevState,
-                                                date_of_death: formatDateForDjango(newValue, {
-                                                    showTime: false,
-                                                    useMidnight: false
-                                                })
-                                            }))}
+                                                      name={"date_of_death"}
+                                                      sx={{mb: 2, width: "100%"}}
+                                                      value={dayjs(data?.date_of_death)}
+                                                      onChange={(newValue) => setData(prevState => ({
+                                                          ...prevState,
+                                                          date_of_death: formatDateForDjango(newValue, {
+                                                              showTime: false,
+                                                              useMidnight: false
+                                                          })
+                                                      }))}
                         /> :
                         <DatePicker label={"Date of Death"}
                                     name={"date_of_death"}
@@ -326,11 +327,11 @@ const InfoCardContent = ({selectedNode}) => {
         <CardContent sx={{pt: 0}}>
             {
                 selectedNode?.date_of_birth &&
-                <Typography>Date of Birth : {getFormattedDate(selectedNode?.date_of_birth,)}</Typography>
+                <Typography>Date of Birth : {getFormattedDate(selectedNode?.date_of_birth, {isUTC: true})}</Typography>
             }
             {
                 selectedNode?.date_of_death &&
-                <Typography>Date of Death : {getFormattedDate(selectedNode?.date_of_birth,)}</Typography>
+                <Typography>Date of Death : {getFormattedDate(selectedNode?.date_of_death, {isUTC: true})}</Typography>
             }
         </CardContent>
     )
