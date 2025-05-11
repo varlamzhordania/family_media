@@ -109,7 +109,7 @@ class PostListCreateView(ListAPIView, CreateAPIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
+@extend_schema(tags=['Posts'])
 class PostSelfListView(ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
