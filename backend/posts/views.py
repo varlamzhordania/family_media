@@ -14,7 +14,8 @@ from django.db import transaction
 from main.models import FamilyMembers
 
 from .models import Post, PostMedia, PostLike, Comment, CommentLike
-from .serializers import PostCreateSerializer, PostSerializer, PostMediaSerializer, PostMediaCreateSerializer, \
+from .serializers import PostCreateSerializer, PostSerializer, PostMediaSerializer, \
+    PostMediaCreateSerializer, \
     CommentSerializer, CommentCreateSerializer
 from .permissions import FamilyAccess
 
@@ -29,17 +30,26 @@ class PostListCreateView(ListAPIView, CreateAPIView):
         family_param = self.request.query_params.get('family', None)
 
         try:
-            user_families = FamilyMembers.objects.filter(member=user).values_list('family', flat=True)
+            user_families = FamilyMembers.objects.filter(member=user).values_list(
+                'family',
+                flat=True
+            )
 
             # If the 'family' query parameter is provided, filter by it
             if family_param:
                 # Ensure that the user has access to the family specified in the query parameter
                 if int(family_param) in user_families:
-                    return Post.objects.filter(author__family=family_param, is_active=True).order_by('-created_at')
+                    return Post.objects.filter(
+                        author__family=family_param,
+                        is_active=True
+                    ).order_by('-created_at')
                 else:
                     return Post.objects.none()
             else:
-                return Post.objects.filter(author__family__in=user_families, is_active=True).order_by('-created_at')
+                return Post.objects.filter(
+                    author__family__in=user_families,
+                    is_active=True
+                ).order_by('-created_at')
 
         except FamilyMembers.DoesNotExist:
             return Post.objects.none()
@@ -81,19 +91,37 @@ class PostListCreateView(ListAPIView, CreateAPIView):
                         return Response(media_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
                 return Response(
-                    {'message': 'success', 'post': PostSerializer(post, context={'request': request}).data},
+                    {'message': 'success',
+                     'post': PostSerializer(post, context={'request': request}).data},
                     status=status.HTTP_201_CREATED
                 )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except FamilyMembers.DoesNotExist:
             transaction.set_rollback(True)
-            return Response({'detail': 'You are not a member of selected family.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'detail': 'You are not a member of selected family.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             transaction.set_rollback(True)
             return Response(
                 {'message': f'Something went wrong: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class PostSelfListView(ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self, request, *args, **kwargs):
+        user = request.user
+
+        try:
+            queryset = Post.objects.filter(author=user, is_active=True).order_by('-created_at')
+            return queryset
+        except:
+            return Post.objects.none()
 
 
 @extend_schema(tags=['Posts'])
@@ -119,14 +147,20 @@ class PostLikeView(APIView):
                     likes_info.increment_counter()
                     action = 'liked'
                 else:
-                    return Response({'details': 'Already liked'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {'details': 'Already liked'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             elif data["action"] == "UNLIKE":
                 if likes_info.users.filter(id=user_family.id).exists():
                     likes_info.users.remove(user_family)
                     likes_info.decrement_counter()
                     action = 'unliked'
                 else:
-                    return Response({'details': 'Not liked yet'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {'details': 'Not liked yet'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             else:
                 return Response({'details': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -135,7 +169,10 @@ class PostLikeView(APIView):
                 status=status.HTTP_200_OK
             )
         except PostLike.DoesNotExist:
-            return Response({'details': 'cannot like this post yet'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'details': 'cannot like this post yet'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             return Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -188,7 +225,11 @@ class CommentLikeView(APIView):
 
             # Retrieve the post and user_family safely
             comment = get_object_or_404(Comment, id=data['comment'])
-            user_family = get_object_or_404(FamilyMembers, member=user, family=comment.author.family)
+            user_family = get_object_or_404(
+                FamilyMembers,
+                member=user,
+                family=comment.author.family
+            )
 
             likes_info = comment.like_info
 
@@ -199,14 +240,20 @@ class CommentLikeView(APIView):
                     likes_info.increment_counter()
                     action = 'liked'
                 else:
-                    return Response({'details': 'Already liked'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {'details': 'Already liked'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             elif data["action"] == "UNLIKE":
                 if likes_info.users.filter(id=user_family.id).exists():
                     likes_info.users.remove(user_family)
                     likes_info.decrement_counter()
                     action = 'unliked'
                 else:
-                    return Response({'details': 'Not liked yet'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {'details': 'Not liked yet'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             else:
                 return Response({'details': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -215,6 +262,9 @@ class CommentLikeView(APIView):
                 status=status.HTTP_200_OK
             )
         except CommentLike.DoesNotExist:
-            return Response({'details': 'cannot like this comment yet'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'details': 'cannot like this comment yet'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             return Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
