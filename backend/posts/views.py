@@ -114,9 +114,8 @@ class PostSelfListView(ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self, request, *args, **kwargs):
-        user = request.user
-
+    def get_queryset(self, *args, **kwargs):
+        user = self.request.user
         try:
             queryset = Post.objects.filter(author=user, is_active=True).order_by('-created_at')
             return queryset
