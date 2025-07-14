@@ -5,7 +5,7 @@ from channels.db import database_sync_to_async
 from rest_framework.renderers import JSONRenderer
 
 from chat.models import Room
-from chat.serializers import RoomSerializer
+from chat.v1.serializers import RoomSerializer
 
 User = get_user_model()
 

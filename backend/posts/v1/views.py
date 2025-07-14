@@ -8,19 +8,35 @@ from rest_framework.request import Request
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (
+    extend_schema, OpenApiResponse, OpenApiParameter, OpenApiTypes,
+    OpenApiExample,
+)
 from django.db import transaction
 
 from main.models import FamilyMembers
 
-from .models import Post, PostMedia, PostLike, Comment, CommentLike
-from .serializers import PostCreateSerializer, PostSerializer, PostMediaSerializer, \
-    PostMediaCreateSerializer, \
-    CommentSerializer, CommentCreateSerializer
-from .permissions import FamilyAccess
+from posts.models import Post, PostLike, Comment, CommentLike
+
+from .serializers import (
+    PostCreateSerializer, PostSerializer,
+    PostMediaCreateSerializer,
+    CommentSerializer, CommentCreateSerializer,
+)
 
 
-@extend_schema(tags=['Posts'])
+@extend_schema(
+    tags=['Posts'],
+    parameters=[
+        OpenApiParameter(
+            name='family',
+            description='Optional family ID to filter posts for a specific family',
+            required=False,
+            type=int,
+            location=OpenApiParameter.QUERY
+        )
+    ]
+)
 class PostListCreateView(ListAPIView, CreateAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
@@ -54,6 +70,16 @@ class PostListCreateView(ListAPIView, CreateAPIView):
         except FamilyMembers.DoesNotExist:
             return Post.objects.none()
 
+    @extend_schema(
+        summary="Create a new post",
+        description="Creates a new post for a family the user is a member of. Supports media files and cover image.",
+        request=PostCreateSerializer,
+        responses={
+            201: OpenApiResponse(response=PostSerializer, description='Post created successfully.'),
+            400: OpenApiResponse(description='Validation error or media issue.'),
+            500: OpenApiResponse(description='Unexpected server error.')
+        }
+    )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         try:
@@ -109,6 +135,21 @@ class PostListCreateView(ListAPIView, CreateAPIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
+@extend_schema(
+    tags=['Posts'],
+    summary="List user's own posts",
+    description="Returns a list of active posts authored by the currently authenticated user, sorted by creation date.",
+    responses={
+        200: OpenApiResponse(
+            response=PostSerializer(many=True),
+            description="List of user's posts."
+        ),
+        401: OpenApiResponse(
+            description="Authentication credentials were not provided or are invalid."
+        ),
+    }
+)
 @extend_schema(tags=['Posts'])
 class PostSelfListView(ListAPIView):
     serializer_class = PostSerializer
@@ -123,7 +164,50 @@ class PostSelfListView(ListAPIView):
             return Post.objects.none()
 
 
-@extend_schema(tags=['Posts'])
+@extend_schema(
+    tags=['Posts'],
+    summary="Like or unlike a post",
+    description="""
+        Allows an authenticated user to **like** or **unlike** a post.
+        The user must belong to the same family as the post's author.
+
+        Valid actions: `"LIKE"`, `"UNLIKE"`
+    """,
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "post": {"type": "integer", "example": 42},
+                "action": {
+                    "type": "string",
+                    "enum": ["LIKE", "UNLIKE"],
+                    "example": "LIKE"
+                }
+            },
+            "required": ["post", "action"]
+        }
+    },
+    responses={
+        200: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+            description="Action successful",
+            examples=[
+                OpenApiExample(
+                    "Like Success",
+                    value={"message": "Successfully liked", "likes_count": 7}
+                ),
+                OpenApiExample(
+                    "Unlike Success",
+                    value={"message": "Successfully unliked", "likes_count": 6}
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description="Invalid action or user has already performed this action"
+        ),
+        500: OpenApiResponse(description="Unexpected error")
+    }
+)
 class PostLikeView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -185,6 +269,34 @@ class CommentModelViewSet(ModelViewSet):
     filterset_fields = ('post',)
     model = Comment
 
+    @extend_schema(
+        summary="Create a new comment on a post",
+        description="""
+            Allows an authenticated user (who is a member of the family that owns the post) to create a comment.
+        """,
+        request=CommentCreateSerializer,
+        responses={
+            201: OpenApiResponse(
+                response=CommentSerializer,
+                description="Comment successfully created"
+            ),
+            400: OpenApiResponse(
+                description="Invalid data or user not allowed to comment on this post"
+                ),
+            404: OpenApiResponse(description="Post or FamilyMembership not found"),
+        },
+        examples=[
+            OpenApiExample(
+                name="Create comment example",
+                value={
+                    "post_id": 12,
+                    "content": "This is a comment",
+                    "reply_to": None
+                },
+                request_only=True
+            )
+        ]
+    )
     @transaction.atomic
     def create(self, request: Request, *args, **kwargs):
         user = request.user
@@ -216,6 +328,56 @@ class CommentModelViewSet(ModelViewSet):
 class CommentLikeView(APIView):
     permission_classes = [IsAuthenticated]
 
+
+
+    @extend_schema(
+        summary="Like or Unlike a Comment",
+        description="Allows an authenticated user to like or unlike a comment within a family they belong to.",
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'comment': {'type': 'integer', 'example': 5},
+                    'action': {'type': 'string', 'enum': ['LIKE', 'UNLIKE'], 'example': 'LIKE'},
+                },
+                'required': ['comment', 'action'],
+            }
+        },
+        responses={
+            200: OpenApiResponse(
+                description="Successfully liked or unliked the comment.",
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        "Success Response",
+                        value={"message": "Successfully liked", "likes_count": 3},
+                        status_codes=["200"],
+                    )
+                ],
+            ),
+            400: OpenApiResponse(
+                description="Bad request (e.g., already liked, not yet liked, invalid action)",
+                examples=[
+                    OpenApiExample(
+                        "Already liked",
+                        value={"details": "Already liked"},
+                        status_codes=["400"]
+                    ),
+                    OpenApiExample(
+                        "Not liked yet",
+                        value={"details": "Not liked yet"},
+                        status_codes=["400"]
+                    ),
+                    OpenApiExample(
+                        "Invalid action",
+                        value={"details": "Invalid action"},
+                        status_codes=["400"]
+                    ),
+                ]
+            ),
+            500: OpenApiResponse(description="Server error")
+        }
+    )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         try:

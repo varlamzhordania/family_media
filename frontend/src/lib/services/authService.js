@@ -1,4 +1,4 @@
-import {API_BASE_URL, CLIENT_ID, CLIENT_SECRET} from "../../conf/index.js";
+import {CLIENT_ID, CLIENT_SECRET, END_POINTS} from "../../conf/index.js";
 
 
 export const loginService = async (data) => {
@@ -11,7 +11,7 @@ export const loginService = async (data) => {
     };
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/token/`, {
+        const response = await fetch(END_POINTS.auth.login, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export const loginService = async (data) => {
 
 export const createService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/accounts/user/register/`, {
+        const response = await fetch(END_POINTS.accounts.createUser, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export const createService = async (data) => {
 
 export const passwordResetService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/accounts/user/password-reset/`, {
+        const response = await fetch(END_POINTS.accounts.passwordReset, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -76,7 +76,7 @@ export const passwordResetService = async (data) => {
 
 export const passwordResetConfirmService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/accounts/user/password-reset-confirm/`, {
+        const response = await fetch(END_POINTS.accounts.passwordResetConfirm, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

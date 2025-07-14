@@ -1,10 +1,10 @@
-import {API_BASE_URL} from "@src/conf/index.js";
+import {END_POINTS} from "@src/conf/index.js";
 import {getHeaders} from "@lib/utils/service.js";
 
 
 export const userService = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/accounts/user/`, {
+        const response = await fetch(END_POINTS.accounts.user, {
             method: "GET",
             headers: getHeaders(),
         })
@@ -21,7 +21,7 @@ export const userService = async () => {
 }
 export const userPatchService = async (data, type = "json") => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/accounts/user/`, {
+        const response = await fetch(END_POINTS.accounts.user, {
             method: "PATCH",
             headers: getHeaders(type),
             body: data
@@ -38,7 +38,7 @@ export const userPatchService = async (data, type = "json") => {
 
 export const relationListService = async (type = "json") => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/accounts/user/relations/`, {
+        const response = await fetch(END_POINTS.accounts.relations, {
             method: "GET",
             headers: getHeaders(type),
         })
@@ -53,10 +53,8 @@ export const relationListService = async (type = "json") => {
 }
 
 export const relationUpdateOrCreateService = async (data, id = 0, type = "json") => {
-    let url = `${API_BASE_URL}/api/accounts/user/relations/${id}/`
-
     try {
-        const response = await fetch(url, {
+        const response = await fetch(END_POINTS.accounts.relationsByID(id), {
             method: "PATCH",
             headers: getHeaders(type),
             body: data
@@ -75,7 +73,7 @@ export const relationUpdateOrCreateService = async (data, id = 0, type = "json")
 
 export const friendshipsListService = async (type = "json") => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/accounts/user/friend-requests/`, {
+        const response = await fetch(END_POINTS.accounts.friendShipsRequests, {
             method: "GET",
             headers: getHeaders(type),
         })
@@ -90,10 +88,9 @@ export const friendshipsListService = async (type = "json") => {
 }
 
 export const friendshipsSendRequestService = async (data, id = 0, type = "json") => {
-    let url = `${API_BASE_URL}/api/accounts/user/friend-request/${id}/`
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(END_POINTS.accounts.friendShipsRequestsByID(id), {
             method: "POST",
             headers: getHeaders(type),
             body: data

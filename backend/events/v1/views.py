@@ -4,22 +4,70 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.utils.translation import gettext as _
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    OpenApiParameter,
+    OpenApiTypes,
+    OpenApiResponse,
+)
 
 from main.models import Family, FamilyMembers
 
-from .models import Event, Invitation
-from .serializers import EventSerializer
+from events.models import Event, Invitation
+from .serializers import EventSerializer, InvitationCreateInputSerializer
 
 
-@extend_schema(tags=["Events"])
+@extend_schema_view(
+    list=extend_schema(
+        tags=["Events"],
+        description="List all active events in families the user belongs to. Optionally filter by family ID.",
+        parameters=[
+            {
+                "name": "family",
+                "description": "Filter events by family ID",
+                "required": False,
+                "in": "query",
+                "schema": {"type": "integer"},
+            }
+        ],
+        responses=EventSerializer(many=True),
+    ),
+    retrieve=extend_schema(
+        tags=["Events"],
+        description="Retrieve a specific event by its ID",
+        responses=EventSerializer,
+    ),
+    create=extend_schema(
+        tags=["Events"],
+        description="Create a new event",
+        request=EventSerializer,
+        responses=EventSerializer,
+    ),
+    update=extend_schema(
+        tags=["Events"],
+        description="Update an event entirely",
+        request=EventSerializer,
+        responses=EventSerializer,
+    ),
+    partial_update=extend_schema(
+        tags=["Events"],
+        description="Partially update an event",
+        request=EventSerializer,
+        responses=EventSerializer,
+    ),
+    destroy=extend_schema(
+        tags=["Events"],
+        description="Delete an event",
+        responses={204: None},
+    ),
+)
 class EventViewSet(ModelViewSet):
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
@@ -48,6 +96,23 @@ class EventViewSet(ModelViewSet):
 class InvitationView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Accept an invitation",
+        description="Accepts an invitation by invitation code. Adds the current user to the family.",
+        parameters=[
+            OpenApiParameter(
+                name="code",
+                required=True,
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Invitation code to accept"
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(description="Invitation accepted or already a member."),
+            400: OpenApiResponse(description="Missing or invalid invitation code."),
+        }
+    )
     @transaction.atomic
     def get(self, request: Request, format=None, *args, **kwargs) -> Response:
         try:
@@ -55,17 +120,24 @@ class InvitationView(APIView):
             code = request.query_params.get('code', None)
 
             if code is None:
-                return Response({"detail": "Invitation Code is required."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Invitation Code is required."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             invitation = Invitation.objects.get(invitation_code=code)
 
             if invitation.expires_at < timezone.now():
-                return Response({"detail": "Invitation expired."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Invitation expired."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             family = invitation.family
             if family.members.filter(pk=user.pk).exists():
                 return Response(
-                    {"message": f"You already a member of {family.name} family.", "family_id": family.pk},
+                    {"message": f"You already a member of {family.name} family.",
+                     "family_id": family.pk},
                     status=status.HTTP_200_OK
                 )
             family.members.add(user)
@@ -75,23 +147,41 @@ class InvitationView(APIView):
             )
 
         except Invitation.DoesNotExist:
-            return Response({"detail": "Invitation is invalid."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invitation is invalid."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         except Exception as e:
             print(str(e))
-            return Response({"detail": f"An unexpected error occurred"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": f"An unexpected error occurred"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+    @extend_schema(
+        summary="Send an invitation",
+        description="Sends a family invitation using the selected service (e.g. email, sms).",
+        request=InvitationCreateInputSerializer,
+        responses={
+            200: OpenApiResponse(description="Invitation sent successfully."),
+            400: OpenApiResponse(description="Missing or invalid input."),
+            403: OpenApiResponse(description="Not authorized to invite to this family."),
+            404: OpenApiResponse(description="Family not found."),
+        }
+    )
     @transaction.atomic
     def post(self, request: Request, format=None, *args, **kwargs) -> Response:
-        user = request.user
-        data = request.data.copy()
-        family_id = data.get("family")
-        target = data.get("target")
-        service = data.get("service", Invitation.ServicesChoices.EMAIL)
-        expire = data.get("expire", None)
+        serializer = InvitationCreateInputSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if not family_id or not target:
-            return Response({"detail": "Family ID and target are required."}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+        validated = serializer.validated_data
+        family_id = validated['family']
+        target = validated['target']
+        service = validated.get('service', Invitation.ServicesChoices.EMAIL)
+        expire = validated.get('expire', None)
 
         try:
             family = Family.objects.get(pk=family_id, is_active=True, members__in=[user])
@@ -121,7 +211,10 @@ class InvitationView(APIView):
                 return self.service_not_available(invitation)
 
         except FamilyMembers.DoesNotExist:
-            return Response({'detail': 'You are not a member of this family.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {'detail': 'You are not a member of this family.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         except Family.DoesNotExist:
             return Response(
                 {"detail": "Family with the given ID not found or access denied."},
@@ -129,7 +222,10 @@ class InvitationView(APIView):
             )
         except Exception as e:
             print(e)
-            return Response({"detail": f"An unexpected error occurred"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": f"An unexpected error occurred"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def service_not_available(self, invitation: Invitation):
         return Response(

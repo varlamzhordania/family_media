@@ -8,7 +8,7 @@ from channels.layers import get_channel_layer
 from main.models import Family, FamilyMembers
 
 from .models import Room, Message
-from .serializers import MessageSerializer
+from chat.v1.serializers import MessageSerializer
 from .consumers import ChatConsumer
 
 

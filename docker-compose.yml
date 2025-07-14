@@ -8,9 +8,10 @@ services:
       - ./backend/:/home/family/backend
       - ./cert/:/home/family/cert
     command: >
-      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn -c conf/gunicorn_conf.py core.wsgi:application"
-    expose:
-      - '8000'
+      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+#      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn -c conf/gunicorn_conf.py core.wsgi:application"
+    ports:
+      - "8000:8000"
     depends_on:
       - postgres
       - redis
@@ -26,8 +27,8 @@ services:
       - ./cert/:/home/family/cert
     command: >
       bash -c "daphne -u /var/run/django.sock -b 0.0.0.0 -p 8001 core.asgi:application"
-    expose:
-      - '8001'
+    ports:
+      - "8001:8001"
     depends_on:
       - postgres
       - redis
@@ -45,7 +46,7 @@ services:
     depends_on:
       - gunicorn
   nginx:
-    restart: unless-stopped
+    restart: no
     container_name: nginx
     image: nginx:latest
     ports:
@@ -66,8 +67,6 @@ services:
     image: postgres:latest
     container_name: postgres
     restart: unless-stopped
-    ports:
-      - '5432:5432'
     env_file:
       - .env
     environment:
@@ -80,5 +79,7 @@ services:
     container_name: redis
     restart: unless-stopped
     image: redis
-    ports:
-      - '6379:6379'
+  memcached:
+    image: memcached:alpine
+    restart: unless-stopped
+    container_name: memcached

@@ -1,15 +1,14 @@
-from typing import List, Dict, Type, Optional, Any
 import json
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async, SyncToAsync
+from channels.db import database_sync_to_async
 from rest_framework.renderers import JSONRenderer
 from asgiref.sync import sync_to_async
 
 from .models import Message, Room
-from .serializers import MessageSerializer
+from chat.v1.serializers import MessageSerializer
 
 User = get_user_model()
 

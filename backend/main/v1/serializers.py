@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from django.utils.timesince import timesince
 
-from .models import Family, FamilyMembers, FamilyTree
+from main.models import Family, FamilyMembers, FamilyTree
 
-from accounts.serializers import PublicUserSerializer
+from accounts.v1.serializers import PublicUserSerializer
 
 
 class FamilySerializer(serializers.ModelSerializer):
@@ -38,3 +38,19 @@ class FamilyTreeSerializer(serializers.ModelSerializer):
     class Meta:
         model = FamilyTree
         exclude = ['lft', 'rght', 'tree_id', 'level']
+
+
+class JoinFamilyInputSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True, help_text="Invite code to join the family")
+
+
+class FamilyGroupActionSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(
+        required=True,
+        choices=[('promote', 'Promote'), ('demote', 'Demote')]
+    )
+    rank = serializers.ChoiceField(required=True, choices=[('admin', 'Admin')])
+    member = serializers.IntegerField(
+        required=True,
+        help_text="ID of the family member to promote/demote"
+    )

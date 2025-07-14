@@ -1,4 +1,4 @@
-import {API_BASE_URL} from "../../conf/index.js";
+import {API_BASE_URL, END_POINTS} from "../../conf/index.js";
 import {getHeaders} from "../utils/service.js";
 
 
@@ -7,7 +7,7 @@ export const listService = async (id = null) => {
         return null
     }
     try {
-        const response = await fetch(`${API_BASE_URL}/api/posts/comments/?post=${id}`, {
+        const response = await fetch(END_POINTS.posts.commentsByPostID(id), {
             method: "GET",
             headers: getHeaders(),
         })
@@ -25,7 +25,7 @@ export const listService = async (id = null) => {
 
 export const createService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/posts/comments/`, {
+        const response = await fetch(END_POINTS.posts.comments, {
             method: "POST",
             headers: getHeaders(),
             body: data
@@ -46,7 +46,7 @@ export const createService = async (data) => {
 
 export const likeService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/posts/comments/like/`, {
+        const response = await fetch(END_POINTS.posts.commentsLike, {
             method: "POST",
             headers: getHeaders(),
             body: data

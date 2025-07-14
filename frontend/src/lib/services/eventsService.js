@@ -1,8 +1,8 @@
-import {API_BASE_URL} from "@src/conf/index.js";
+import {END_POINTS} from "@src/conf/index.js";
 import {getHeaders} from "@lib/utils/service.js";
 
 export const listService = async (id = null) => {
-    let url = `${API_BASE_URL}/api/events/`
+    let url = END_POINTS.events.index
     if (id)
         url += `?family=${id}`
 
@@ -23,7 +23,7 @@ export const listService = async (id = null) => {
 }
 
 export const createService = async (data, type = "json") => {
-    let url = `${API_BASE_URL}/api/events/`
+    let url = END_POINTS.events.index
 
     try {
         const response = await fetch(url, {
@@ -43,7 +43,7 @@ export const createService = async (data, type = "json") => {
 }
 
 export const patchService = async (data, id, type = "json") => {
-    let url = `${API_BASE_URL}/api/events/${id}/`
+    let url = END_POINTS.events.byID(id)
 
     try {
         const response = await fetch(url, {
@@ -62,7 +62,7 @@ export const patchService = async (data, id, type = "json") => {
     }
 }
 export const deleteService = async (id, type = "json") => {
-    let url = `${API_BASE_URL}/api/events/${id}/`
+    let url = END_POINTS.events.byID(id)
 
     try {
         const response = await fetch(url, {
@@ -82,7 +82,7 @@ export const deleteService = async (id, type = "json") => {
 
 
 export const sendInvitationService = async (data, type = "json") => {
-    let url = `${API_BASE_URL}/api/events/invitations/`
+    let url = END_POINTS.events.invitation
 
     try {
         const response = await fetch(url, {
@@ -100,7 +100,7 @@ export const sendInvitationService = async (data, type = "json") => {
     }
 }
 export const checkInvitationService = async (code) => {
-    let url = `${API_BASE_URL}/api/events/invitations/?code=${code}`
+    let url = `${END_POINTS.events.invitation}?code=${code}`
 
     try {
         const response = await fetch(url, {

@@ -23,11 +23,11 @@ from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/accounts/", include("accounts.urls", namespace="accounts")),
-    path("api/posts/", include("posts.urls", namespace="posts")),
-    path("api/events/", include("events.urls", namespace="events")),
-    path("api/chat/", include("chat.urls", namespace="chat")),
-    path("api/", include("main.urls", namespace="main")),
+    path("api/v1/accounts/", include("accounts.v1.urls", namespace="v1-accounts")),
+    path("api/v1/posts/", include("posts.v1.urls", namespace="v1-posts")),
+    path("api/v1/events/", include("events.v1.urls", namespace="v1-events")),
+    path("api/v1/chat/", include("chat.v1.urls", namespace="v1-chat")),
+    path("api/v1/", include("main.v1.urls", namespace="v1-main")),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     re_path(r'^api/auth/', include('drf_social_oauth2.urls', namespace='drf')),

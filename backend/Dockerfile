@@ -1,11 +1,16 @@
-FROM python:3.11
+FROM python:3.12-slim
 
 WORKDIR /home/family/backend
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements.txt /home/family/backend
 

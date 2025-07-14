@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
 from main.models import FamilyMembers
-from accounts.serializers import PublicUserSerializer
+from accounts.v1.serializers import PublicUserSerializer
 
-from .models import Post, PostMedia, PostLike, Comment, CommentLike
+from posts.models import Post, PostMedia, PostLike, Comment, CommentLike
 
 
 class AuthorSerializer(serializers.ModelSerializer):

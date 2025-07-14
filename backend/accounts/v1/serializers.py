@@ -3,30 +3,40 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
 
-from .models import User, Friendship, Relation
+from accounts.models import User, Friendship, Relation
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        exclude = ['email_verified', 'date_joined', 'last_login', 'last_ip', 'is_staff', 'is_superuser', 'is_active',
-                   'groups', 'user_permissions', 'username']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+class UserCreateSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    first_name = serializers.CharField(required=True, allow_blank=False)
+    last_name = serializers.CharField(required=True, allow_blank=False)
+    password1 = serializers.CharField(write_only=True, required=True)
+    password2 = serializers.CharField(write_only=True, required=True)
 
-    def validate_password(self, value):
+    def validate(self, data):
+        if data['password1'] != data['password2']:
+            raise serializers.ValidationError({'password2': 'Passwords do not match.'})
         try:
-            validate_password(value)
+            validate_password(data['password1'])
         except ValidationError as e:
-            raise serializers.ValidationError(e.messages)
-        return value
+            raise serializers.ValidationError({'password1': e.messages})
+        return data
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        email = validated_data['email']
+        password = validated_data['password1']
+        first_name = validated_data.get('first_name', '')
+        last_name = validated_data.get('last_name', '')
+
+        user = User.objects.create_user(
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
         return user
 
 
@@ -37,7 +47,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ['password', 'last_ip']
-        read_only_fields = ['last_ip', 'email_verified', 'date_joined', 'last_login', 'last_ip', 'id', '']
+        read_only_fields = ['last_ip', 'email_verified', 'date_joined', 'last_login', 'last_ip',
+                            'id', 'is_superuser', 'is_staff', 'is_online', 'groups',
+                            'user_permissions', 'username', 'email', 'is_active']
 
     def get_initial_name(self, obj):
         return obj.get_initials_name
@@ -59,6 +71,17 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return obj.get_full_name
+
+
+class UserDetailResponseSerializer(serializers.Serializer):
+    user = UserSerializer()
+    memberships = serializers.SerializerMethodField()
+    friends = PublicUserSerializer(many=True)
+
+    def get_memberships(self, obj):
+        from main.v1.serializers import FamilyMembersSerializer
+
+        return FamilyMembersSerializer(obj['memberships'], many=True, context=self.context).data
 
 
 class FriendshipSerializer(serializers.ModelSerializer):

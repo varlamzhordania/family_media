@@ -1,9 +1,9 @@
-import {API_BASE_URL} from "@src/conf/index.js";
+import {END_POINTS} from "@src/conf/index.js";
 import {getHeaders} from "@lib/utils/service.js";
 
 export const createService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/chat/`, {
+        const response = await fetch(END_POINTS.chat.index, {
             method: "POST",
             headers: getHeaders("none"),
             body: data

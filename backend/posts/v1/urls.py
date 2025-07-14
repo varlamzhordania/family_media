@@ -3,7 +3,7 @@ from .views import PostListCreateView, PostSelfListView, PostLikeView, CommentMo
     CommentLikeView
 from rest_framework.routers import SimpleRouter
 
-app_name = 'posts'
+app_name = 'v1-posts'
 
 router = SimpleRouter()
 router.register(r'comments', CommentModelViewSet, basename='comments')

@@ -1,9 +1,9 @@
-import {API_BASE_URL} from "../../conf/index.js";
+import {END_POINTS} from "../../conf/index.js";
 import {getHeaders} from "../utils/service.js";
 
 
 export const listService = async (family = null) => {
-    let url = `${API_BASE_URL}/api/posts/`
+    let url = END_POINTS.posts.index
     if (family)
         url += `?family=${family}`
     try {
@@ -26,7 +26,7 @@ export const listService = async (family = null) => {
 
 export const createService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/posts/`, {
+        const response = await fetch(END_POINTS.posts.index, {
             method: "POST",
             headers: getHeaders("none"),
             body: data
@@ -45,7 +45,7 @@ export const createService = async (data) => {
 
 export const likeService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/posts/like/`, {
+        const response = await fetch(END_POINTS.posts.like, {
             method: "POST",
             headers: getHeaders(),
             body: data

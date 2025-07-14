@@ -1,10 +1,13 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from .views import UserCreateAPIView, UserView, RelationViewSet, VerifyEmailView, RequestEmailVerification, \
-    PasswordResetRequestView, PasswordResetConfirmView, FriendRequestView,FriendRequestListView
+from .views import (
+    UserCreateAPIView, UserView, RelationViewSet, VerifyEmailView,
+    RequestEmailVerification,
+    PasswordResetRequestView, PasswordResetConfirmView, FriendRequestView, FriendRequestListView,
+)
 
-app_name = 'accounts'
+app_name = 'v1-accounts'
 
 router = SimpleRouter()
 
@@ -16,8 +19,12 @@ urlpatterns = [
     path('user/', UserView.as_view(), name="user_data"),
     path('user/register/', UserCreateAPIView.as_view(), name="user_create"),
     path('user/password-reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
-    path('user/password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('user/friend-request/<int:user_id>/', FriendRequestView.as_view(), name='friend_request'),
+    path(
+        'user/password-reset-confirm/',
+        PasswordResetConfirmView.as_view(),
+        name='password_reset_confirm'
+    ),
+    path('user/friend-requests/<int:user_id>/', FriendRequestView.as_view(), name='friend_request'),
     path('user/friend-requests/', FriendRequestListView.as_view(), name='friend_requests'),
 ]
 

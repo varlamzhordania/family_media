@@ -10,20 +10,12 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 import os
 import django
 
-from core.settings.settings import DEBUG
 
-if DEBUG:
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings.development')
-    print("Manage: Django loaded up in setting mode : Development")
-else:
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings.production')
-    print("Manage: Django loaded up in setting mode : Production")
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
 django.setup()
 
 from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter
-from channels.auth import AuthMiddlewareStack, BaseMiddleware
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 

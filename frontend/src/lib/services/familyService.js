@@ -1,10 +1,10 @@
-import {API_BASE_URL} from "@src/conf/index.js";
+import {END_POINTS} from "@src/conf/index.js";
 import {getHeaders} from "@lib/utils/service.js";
 
 
 export const createService = async (data, type = "json") => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/family/`, {
+        const response = await fetch(END_POINTS.family.index, {
             method: "POST",
             headers: getHeaders(type),
             body: data
@@ -22,7 +22,7 @@ export const createService = async (data, type = "json") => {
 
 export const listService = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/`, {
+        const response = await fetch(END_POINTS.family.families, {
             method: "GET",
             headers: getHeaders(),
         })
@@ -38,7 +38,7 @@ export const listService = async () => {
 }
 export const retrieveService = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesByID(id), {
             method: "GET",
             headers: getHeaders(),
         })
@@ -55,7 +55,7 @@ export const retrieveService = async (id) => {
 
 export const patchService = async (data, type = "json", id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesByID(id), {
             method: "PATCH",
             headers: getHeaders(type),
             body: data
@@ -73,7 +73,7 @@ export const patchService = async (data, type = "json", id) => {
 
 export const joinService = async (data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/`, {
+        const response = await fetch(END_POINTS.family.families, {
             method: "POST",
             headers: getHeaders("json"),
             body: data
@@ -91,7 +91,7 @@ export const joinService = async (data) => {
 
 export const leaveService = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesByID(id), {
             method: "DELETE",
             headers: getHeaders(),
         })
@@ -108,7 +108,7 @@ export const leaveService = async (id) => {
 
 export const requestInviteCodeService = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/invite/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesInviteByID(id), {
             method: "GET",
             headers: getHeaders("json"),
         })
@@ -124,7 +124,7 @@ export const requestInviteCodeService = async (id) => {
 }
 export const groupService = async (id, data) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/groups/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesGroupsByID(id), {
             method: "POST",
             headers: getHeaders("json"),
             body: data
@@ -143,7 +143,7 @@ export const groupService = async (id, data) => {
 
 export const treeListService = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/tree/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesTreeByID(id), {
             method: "GET",
             headers: getHeaders(),
         })
@@ -160,7 +160,7 @@ export const treeListService = async (id) => {
 
 export const treeCreateService = async (data, id, type = "none") => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/tree/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesTreeByID(id), {
             method: "POST",
             headers: getHeaders(type),
             body: data
@@ -178,7 +178,7 @@ export const treeCreateService = async (data, id, type = "none") => {
 
 export const treePatchService = async (data, id, type = "none") => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/tree/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesTreeByID(id), {
             method: "PATCH",
             headers: getHeaders(type),
             body: data
@@ -196,7 +196,7 @@ export const treePatchService = async (data, id, type = "none") => {
 
 export const treeDeleteService = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/families/tree/${id}/`, {
+        const response = await fetch(END_POINTS.family.familiesTreeByID(id), {
             method: "DELETE",
             headers: getHeaders(),
         })
