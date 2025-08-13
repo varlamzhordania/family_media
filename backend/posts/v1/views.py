@@ -14,6 +14,7 @@ from drf_spectacular.utils import (
 )
 from django.db import transaction
 
+from core.mixins import OptionalPaginationMixin
 from main.models import FamilyMembers
 
 from posts.models import Post, PostLike, Comment, CommentLike
@@ -37,7 +38,11 @@ from .serializers import (
         )
     ]
 )
-class PostListCreateView(ListAPIView, CreateAPIView):
+class PostListCreateView(
+    OptionalPaginationMixin,
+    ListAPIView,
+    CreateAPIView
+):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
@@ -46,7 +51,9 @@ class PostListCreateView(ListAPIView, CreateAPIView):
         family_param = self.request.query_params.get('family', None)
 
         try:
-            user_families = FamilyMembers.objects.filter(member=user).values_list(
+            user_families = FamilyMembers.objects.filter(
+                member=user
+            ).values_list(
                 'family',
                 flat=True
             )
@@ -75,8 +82,13 @@ class PostListCreateView(ListAPIView, CreateAPIView):
         description="Creates a new post for a family the user is a member of. Supports media files and cover image.",
         request=PostCreateSerializer,
         responses={
-            201: OpenApiResponse(response=PostSerializer, description='Post created successfully.'),
-            400: OpenApiResponse(description='Validation error or media issue.'),
+            201: OpenApiResponse(
+                response=PostSerializer,
+                description='Post created successfully.'
+            ),
+            400: OpenApiResponse(
+                description='Validation error or media issue.'
+            ),
             500: OpenApiResponse(description='Unexpected server error.')
         }
     )
@@ -89,7 +101,10 @@ class PostListCreateView(ListAPIView, CreateAPIView):
             cover_image = request.FILES.get('cover_image')
             family = data['family']
 
-            family_member = FamilyMembers.objects.get(member=user, family=family)
+            family_member = FamilyMembers.objects.get(
+                member=user,
+                family=family
+            )
 
             data['author'] = family_member.id
             data['is_active'] = True
@@ -99,29 +114,46 @@ class PostListCreateView(ListAPIView, CreateAPIView):
                 post = serializer.save()
 
                 if cover_image:
-                    media_data = {'post': post.id, 'file': cover_image, 'is_featured': True}
-                    media_serializer = PostMediaCreateSerializer(data=media_data)
+                    media_data = {'post': post.id, 'file': cover_image,
+                                  'is_featured': True}
+                    media_serializer = PostMediaCreateSerializer(
+                        data=media_data
+                    )
                     if media_serializer.is_valid():
                         media_serializer.save()
                     else:
                         transaction.set_rollback(True)
-                        return Response(media_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            media_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
 
                 for file in files:
                     media_data = {'post': post.id, 'file': file}
-                    media_serializer = PostMediaCreateSerializer(data=media_data)
+                    media_serializer = PostMediaCreateSerializer(
+                        data=media_data
+                    )
                     if media_serializer.is_valid():
                         media_serializer.save()
                     else:
                         transaction.set_rollback(True)
-                        return Response(media_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            media_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
 
                 return Response(
                     {'message': 'success',
-                     'post': PostSerializer(post, context={'request': request}).data},
+                     'post': PostSerializer(
+                         post,
+                         context={'request': request}
+                     ).data},
                     status=status.HTTP_201_CREATED
                 )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except FamilyMembers.DoesNotExist:
             transaction.set_rollback(True)
             return Response(
@@ -151,14 +183,17 @@ class PostListCreateView(ListAPIView, CreateAPIView):
     }
 )
 @extend_schema(tags=['Posts'])
-class PostSelfListView(ListAPIView):
+class PostSelfListView(OptionalPaginationMixin, ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self, *args, **kwargs):
         user = self.request.user
         try:
-            queryset = Post.objects.filter(author=user, is_active=True).order_by('-created_at')
+            queryset = Post.objects.filter(
+                author=user,
+                is_active=True
+            ).order_by('-created_at')
             return queryset
         except:
             return Post.objects.none()
@@ -194,11 +229,13 @@ class PostSelfListView(ListAPIView):
             examples=[
                 OpenApiExample(
                     "Like Success",
-                    value={"message": "Successfully liked", "likes_count": 7}
+                    value={"message": "Successfully liked",
+                           "likes_count": 7}
                 ),
                 OpenApiExample(
                     "Unlike Success",
-                    value={"message": "Successfully unliked", "likes_count": 6}
+                    value={"message": "Successfully unliked",
+                           "likes_count": 6}
                 )
             ]
         ),
@@ -219,7 +256,11 @@ class PostLikeView(APIView):
 
             # Retrieve the post and user_family safely
             post = get_object_or_404(Post, id=data['post'])
-            user_family = get_object_or_404(FamilyMembers, member=user, family=post.author.family)
+            user_family = get_object_or_404(
+                FamilyMembers,
+                member=user,
+                family=post.author.family
+            )
 
             likes_info = post.like_info
 
@@ -245,10 +286,14 @@ class PostLikeView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
-                return Response({'details': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'details': 'Invalid action'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             return Response(
-                {'message': f'Successfully {action}', 'likes_count': likes_info.counter},
+                {'message': f'Successfully {action}',
+                 'likes_count': likes_info.counter},
                 status=status.HTTP_200_OK
             )
         except PostLike.DoesNotExist:
@@ -257,14 +302,19 @@ class PostLikeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 @extend_schema(tags=['Comments'])
-class CommentModelViewSet(ModelViewSet):
+class CommentModelViewSet(OptionalPaginationMixin, ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Comment.objects.filter(is_active=True, level=0).order_by('-id')
+    queryset = Comment.objects.filter(is_active=True, level=0).order_by(
+        '-id'
+    )
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ('post',)
     model = Comment
@@ -282,8 +332,10 @@ class CommentModelViewSet(ModelViewSet):
             ),
             400: OpenApiResponse(
                 description="Invalid data or user not allowed to comment on this post"
-                ),
-            404: OpenApiResponse(description="Post or FamilyMembership not found"),
+            ),
+            404: OpenApiResponse(
+                description="Post or FamilyMembership not found"
+            ),
         },
         examples=[
             OpenApiExample(
@@ -328,8 +380,6 @@ class CommentModelViewSet(ModelViewSet):
 class CommentLikeView(APIView):
     permission_classes = [IsAuthenticated]
 
-
-
     @extend_schema(
         summary="Like or Unlike a Comment",
         description="Allows an authenticated user to like or unlike a comment within a family they belong to.",
@@ -338,7 +388,9 @@ class CommentLikeView(APIView):
                 'type': 'object',
                 'properties': {
                     'comment': {'type': 'integer', 'example': 5},
-                    'action': {'type': 'string', 'enum': ['LIKE', 'UNLIKE'], 'example': 'LIKE'},
+                    'action': {'type': 'string',
+                               'enum': ['LIKE', 'UNLIKE'],
+                               'example': 'LIKE'},
                 },
                 'required': ['comment', 'action'],
             }
@@ -350,7 +402,8 @@ class CommentLikeView(APIView):
                 examples=[
                     OpenApiExample(
                         "Success Response",
-                        value={"message": "Successfully liked", "likes_count": 3},
+                        value={"message": "Successfully liked",
+                               "likes_count": 3},
                         status_codes=["200"],
                     )
                 ],
@@ -416,10 +469,14 @@ class CommentLikeView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
-                return Response({'details': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'details': 'Invalid action'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             return Response(
-                {'message': f'Successfully {action}', 'likes_count': likes_info.counter},
+                {'message': f'Successfully {action}',
+                 'likes_count': likes_info.counter},
                 status=status.HTTP_200_OK
             )
         except CommentLike.DoesNotExist:
@@ -428,4 +485,7 @@ class CommentLikeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

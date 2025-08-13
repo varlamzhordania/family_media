@@ -1,7 +1,10 @@
 from rest_framework import status, permissions, viewsets, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
+from drf_spectacular.utils import (
+    extend_schema, OpenApiResponse,
+    OpenApiParameter,
+)
 from rest_framework.request import Request
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -15,12 +18,20 @@ from main.v1.serializers import FamilyMembersSerializer
 
 from accounts.tokens import email_verification_token
 from .serializers import (
-    UserSerializer, UserCreateSerializer, RelationSerializer,
+    UserSerializer,
+    UserCreateSerializer,
+    RelationSerializer,
     PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer, FriendshipSerializer, PublicUserSerializer,
+    PasswordResetConfirmSerializer,
+    FriendshipSerializer,
+    PublicUserSerializer,
     UserDetailResponseSerializer,
+    FriendActionSerializer,
 )
-from accounts.helpers import send_email_verification, send_password_reset_email
+from accounts.helpers import (
+    send_email_verification,
+    send_password_reset_email,
+)
 from accounts.models import User, Friendship, Relation
 
 
@@ -48,10 +59,14 @@ class UserCreateAPIView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             return Response(
-                {'detail': 'User created successfully.', 'user': UserSerializer(user).data},
+                {'detail': 'User created successfully.',
+                 'user': UserSerializer(user).data},
                 status=status.HTTP_201_CREATED
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @extend_schema(tags=["Account"])
@@ -70,20 +85,33 @@ class UserView(APIView):
             403: OpenApiResponse(description="Not authenticated")
         }
     )
-    def get(self, request: Request, format=None, *args, **kwargs) -> Response:
+    def get(
+            self,
+            request: Request,
+            format=None,
+            *args,
+            **kwargs
+            ) -> Response:
         """
         Retrieve the authenticated user's details and active memberships.
         """
         user = request.user
         memberships = user.my_memberships.filter(is_active=True)
         friends = user.get_friends()
-        user_serializer = self.serializer_class(user, context={'request': request})
+        user_serializer = self.serializer_class(
+            user,
+            context={'request': request}
+            )
         memberships_serializer = FamilyMembersSerializer(
             memberships,
             many=True,
             context={'request': request}
         )
-        friends_serializer = PublicUserSerializer(friends, many=True, context={'request': request})
+        friends_serializer = PublicUserSerializer(
+            friends,
+            many=True,
+            context={'request': request}
+            )
 
         return Response(
             {
@@ -94,7 +122,13 @@ class UserView(APIView):
         )
 
     @transaction.atomic
-    def patch(self, request: Request, format=None, *args, **kwargs) -> Response:
+    def patch(
+            self,
+            request: Request,
+            format=None,
+            *args,
+            **kwargs
+            ) -> Response:
         """
         Update the authenticated user's information.
         """
@@ -110,7 +144,10 @@ class UserView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @extend_schema(tags=["Account"])
@@ -139,7 +176,10 @@ class RequestEmailVerification(APIView):
                 )
         except Exception as e:
             # Return an error response if any exception occurs
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+                )
 
 
 class VerifyEmailView(View):
@@ -161,11 +201,16 @@ class VerifyEmailView(View):
             # Handle exceptions and set user to None if any error occurs
             user = None
 
-        if user is not None and email_verification_token.check_token(user, token):
+        if user is not None and email_verification_token.check_token(
+                user,
+                token
+                ):
             # If the user exists and the token is valid, mark the email as verified
             user.email_verified = True
             user.save()
-            return HttpResponse('Email verified successfully. You can close this window now.')
+            return HttpResponse(
+                'Email verified successfully. You can close this window now.'
+                )
         else:
             # If the token is invalid or the user does not exist, return an error response
             return HttpResponse('Invalid verification link.', status=400)
@@ -175,8 +220,12 @@ class VerifyEmailView(View):
     tags=["Account"],
     request=PasswordResetRequestSerializer,
     responses={
-        200: OpenApiResponse(description="Password reset link sent to your email."),
-        400: OpenApiResponse(description="Invalid email or malformed request."),
+        200: OpenApiResponse(
+            description="Password reset link sent to your email."
+            ),
+        400: OpenApiResponse(
+            description="Invalid email or malformed request."
+            ),
     },
     summary="Request password reset",
     description="Send a password reset link to the user's email if the address is valid and exists in the system."
@@ -187,23 +236,35 @@ class PasswordResetRequestView(APIView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+            )
         if serializer.is_valid():
-            user = User.objects.get(email=serializer.validated_data['email'])
+            user = User.objects.get(
+                email=serializer.validated_data['email']
+                )
             send_password_reset_email(user)
             return Response(
                 {"message": "Password reset link sent to your email."},
                 status=status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @extend_schema(
     tags=["Account"],
     request=PasswordResetConfirmSerializer,
     responses={
-        200: OpenApiResponse(description="Password has been reset successfully."),
-        400: OpenApiResponse(description="Invalid token, user ID, or password data."),
+        200: OpenApiResponse(
+            description="Password has been reset successfully."
+            ),
+        400: OpenApiResponse(
+            description="Invalid token, user ID, or password data."
+            ),
     },
     summary="Confirm password reset",
     description="Confirms a password reset using the provided UID, token, and new password. Typically used after clicking the reset link from the email."
@@ -220,7 +281,10 @@ class PasswordResetConfirmView(APIView):
                 {"message": "Password has been reset successfully."},
                 status=status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @extend_schema(tags=["Account"])
@@ -230,7 +294,10 @@ class RelationViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        return Relation.objects.filter(is_active=True, user=self.request.user)
+        return Relation.objects.filter(
+            is_active=True,
+            user=self.request.user
+            )
 
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
@@ -248,7 +315,12 @@ class RelationViewSet(viewsets.ModelViewSet):
         description="Allows the authenticated user to update an existing relation with a specific related user. If no relation exists, creates a new one."
     )
     @transaction.atomic
-    def partial_update(self, request: Request, *args, **kwargs) -> Response:
+    def partial_update(
+            self,
+            request: Request,
+            *args,
+            **kwargs
+            ) -> Response:
         user = request.user
         data = request.data.copy()
         data['user'] = user.pk
@@ -266,10 +338,17 @@ class RelationViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             new_query = self.get_queryset()
-            new_serializer = RelationSerializer(new_query, many=True, context={'request': request})
+            new_serializer = RelationSerializer(
+                new_query,
+                many=True,
+                context={'request': request}
+                )
             return Response(new_serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+                )
 
 
 @extend_schema(
@@ -280,36 +359,41 @@ class RelationViewSet(viewsets.ModelViewSet):
             type=int,
             location=OpenApiParameter.PATH,
             description="ID of the user to act upon"
-            ),
+        ),
     ],
-    request={
-        'application/json': {
-            'type': 'object',
-            'properties': {
-                'action': {
-                    'type': 'string',
-                    'enum': ['request', 'accept', 'decline', 'remove'],
-                    'description': "Action to perform on friend request"
-                }
-            },
-            'required': ['action']
-        }
-    },
+    request=FriendActionSerializer,
     responses={
-        201: OpenApiResponse(description="Friend request sent or friend removed successfully."),
-        200: OpenApiResponse(description="Friend request accepted or declined successfully."),
-        400: OpenApiResponse(description="Bad request, e.g. invalid action or already sent."),
-        404: OpenApiResponse(description="User or friend request not found."),
+        201: OpenApiResponse(
+            description="Friend request sent or friend removed successfully."
+            ),
+        200: OpenApiResponse(
+            description="Friend request accepted or declined successfully."
+            ),
+        400: OpenApiResponse(
+            description="Bad request, e.g. invalid action or already sent."
+            ),
+        404: OpenApiResponse(
+            description="User or friend request not found."
+            ),
     }
 )
 class FriendRequestView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request: Request, user_id: int, *args, **kwargs) -> Response:
+    def post(
+            self,
+            request: Request,
+            user_id: int,
+            *args,
+            **kwargs
+            ) -> Response:
         data = request.data.copy()
         action = data.get('action')
         if not action:
-            return Response({'detail', 'Action required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'detail', 'Action required.'},
+                status=status.HTTP_400_BAD_REQUEST
+                )
 
         if action == 'request':
             to_user = get_object_or_404(get_user_model(), id=user_id)
@@ -352,7 +436,10 @@ class FriendRequestView(APIView):
                 status=status.HTTP_201_CREATED
             )
         else:
-            return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid action."},
+                status=status.HTTP_400_BAD_REQUEST
+                )
 
 
 @extend_schema(tags=["Account"])

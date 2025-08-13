@@ -134,3 +134,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             user.set_password(new_password)
             user.save()
             return user
+
+class FriendActionSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(
+        choices=['request', 'accept', 'decline', 'remove'],
+        help_text="Action to perform on friend request"
+    )
+
+    class Meta:
+        ref_name = "FriendRequestAction"  # unique name for OpenAPI docs
