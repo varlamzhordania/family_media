@@ -13,7 +13,7 @@ from .tokens import email_verification_token
 def send_email_verification(instance: User):
     token = email_verification_token.make_token(instance)
     uidb64 = urlsafe_base64_encode(force_bytes(instance.pk))
-    verification_url = reverse('accounts:verify_email', kwargs={'uidb64': uidb64, 'token': token})
+    verification_url = reverse('v1-accounts:verify_email', kwargs={'uidb64': uidb64, 'token': token})
     verification_link = absolute_url(verification_url)
     subject = 'Verify your email address'
     message = f'Click the link to verify your email: {verification_link}'
