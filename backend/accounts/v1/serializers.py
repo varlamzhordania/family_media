@@ -16,9 +16,18 @@ class UserCreateSerializer(serializers.Serializer):
     password1 = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
 
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError(
+                "A user with this email already exists."
+            )
+        return value
+
     def validate(self, data):
         if data['password1'] != data['password2']:
-            raise serializers.ValidationError({'password2': 'Passwords do not match.'})
+            raise serializers.ValidationError(
+                {'password2': 'Passwords do not match.'}
+            )
         try:
             validate_password(data['password1'])
         except ValidationError as e:
@@ -47,9 +56,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ['password', 'last_ip']
-        read_only_fields = ['last_ip', 'email_verified', 'date_joined', 'last_login', 'last_ip',
-                            'id', 'is_superuser', 'is_staff', 'is_online', 'groups',
-                            'user_permissions', 'username', 'email', 'is_active']
+        read_only_fields = ['last_ip', 'email_verified', 'date_joined',
+                            'last_login', 'last_ip',
+                            'id', 'is_superuser', 'is_staff', 'is_online',
+                            'groups',
+                            'user_permissions', 'username', 'email',
+                            'is_active']
 
     def get_initial_name(self, obj):
         return obj.get_initials_name
@@ -81,7 +93,11 @@ class UserDetailResponseSerializer(serializers.Serializer):
     def get_memberships(self, obj):
         from main.v1.serializers import FamilyMembersSerializer
 
-        return FamilyMembersSerializer(obj['memberships'], many=True, context=self.context).data
+        return FamilyMembersSerializer(
+            obj['memberships'],
+            many=True,
+            context=self.context
+        ).data
 
 
 class FriendshipSerializer(serializers.ModelSerializer):
@@ -104,7 +120,9 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(_("User with this email does not exist."))
+            raise serializers.ValidationError(
+                _("User with this email does not exist.")
+            )
         return value
 
 
@@ -127,13 +145,19 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError(_('Invalid token.'))
 
-        if not PasswordResetTokenGenerator().check_token(user, attrs['token']):
-            raise serializers.ValidationError(_('Invalid token or expired token.'))
+        if not PasswordResetTokenGenerator().check_token(
+                user,
+                attrs['token']
+        ):
+            raise serializers.ValidationError(
+                _('Invalid token or expired token.')
+            )
         new_password = attrs['new_password']
         if self.check_password(new_password):
             user.set_password(new_password)
             user.save()
             return user
+
 
 class FriendActionSerializer(serializers.Serializer):
     action = serializers.ChoiceField(
