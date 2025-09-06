@@ -17,4 +17,7 @@ def update_last_ip_address(sender, request, user, **kwargs):
 @receiver(post_save, sender=User)
 def send_verification_email(sender, instance, created, **kwargs):
     if created and not instance.email_verified:
-        send_email_verification(instance)
+        try:
+            send_email_verification(instance)
+        except Exception as e:
+            print("send_email_verification failed: ", e)
