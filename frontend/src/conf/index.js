@@ -24,7 +24,7 @@ export const END_POINTS = {
         relations: `${API_BASE_URL}/api/v1/accounts/user/relations/`,
         relationsByID: (id) => `${API_BASE_URL}/api/v1/accounts/user/relations/${id}/`,
         friendShipsRequests: `${API_BASE_URL}/api/v1/accounts/user/friend-requests/`,
-        friendShipsRequestsByID: (id) => `${API_BASE_URL}/api/accounts/user/friend-requests/${id}/`,
+        friendShipsRequestsByID: (id) => `${API_BASE_URL}/api/v1/accounts/user/friend-requests/${id}/`,
     },
     posts: {
         index: `${API_BASE_URL}/api/v1/posts/`,

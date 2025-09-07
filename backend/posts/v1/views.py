@@ -79,18 +79,38 @@ class PostListCreateView(
 
     @extend_schema(
         summary="Create a new post",
-        description="Creates a new post for a family the user is a member of. Supports media files and cover image.",
-        request=PostCreateSerializer,
+        description=(
+                "Creates a new post for a family the user is a member of. "
+                "Supports multiple media files and an optional cover image. "
+                "The request accepts `media` (list of files) and `cover_image` (single file)."
+        ),
+        request=OpenApiTypes.OBJECT,
+        # or PostCreateSerializer if you want to keep body schema
         responses={
             201: OpenApiResponse(
                 response=PostSerializer,
-                description='Post created successfully.'
+                description="Post created successfully (with media included)."
             ),
             400: OpenApiResponse(
-                description='Validation error or media issue.'
+                response=PostMediaCreateSerializer,  # 👈 add it here
+                description="Validation error (post or media)."
             ),
-            500: OpenApiResponse(description='Unexpected server error.')
-        }
+            500: OpenApiResponse(description="Unexpected server error.")
+        },
+        examples=[
+            OpenApiExample(
+                "Example request",
+                summary="Create post with media",
+                description="Multipart form with text + files.",
+                value={
+                    "family": 1,
+                    "content": "Some post text",
+                    "media": ["file1.png", "file2.jpg"],
+                    "cover_image": "cover.png"
+                },
+                request_only=True
+            )
+        ]
     )
     @transaction.atomic
     def post(self, request, *args, **kwargs):

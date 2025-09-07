@@ -25,7 +25,7 @@ register();
 
 export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
     const {relations} = useRelationsContext()
-    const {memberShips} = useMembershipsContext()
+    const {memberships} = useMembershipsContext()
     const [liked, setLiked] = useState(false)
     const [likeCounter, setLikeCounter] = useState(0)
     const swiperRef = useRef(null)
@@ -48,9 +48,11 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
     }
     const getLikeStatus = () => {
         const likesUser = data?.likes?.users || [];
-        const membershipIds = memberShips?.map(member => member?.id);
-        return likesUser.some(userId => membershipIds?.includes(userId));
+        const membershipIds = memberships?.map(member => member?.id) || [];
+
+        return likesUser.some(userId => membershipIds.includes(userId));
     };
+
 
     const getAlt = () => {
         return data?.text?.length > 15 ? data?.text?.substr(0, 15) + "..." : data?.text
