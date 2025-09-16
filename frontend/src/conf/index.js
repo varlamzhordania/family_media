@@ -1,20 +1,27 @@
-export const DEBUG = true
+const DEBUG = import.meta.env.MODE === 'development'
 
-export const API_SERVER_DOMAIN = '127.0.0.1:8000'
-export const WS_SERVER_DOMAIN = '127.0.0.1:8000'
+export const API_SERVER_DOMAIN = import.meta.env.VITE_API_SERVER_DOMAIN
+export const WS_SERVER_DOMAIN = import.meta.env.VITE_WS_SERVER_DOMAIN
 
-export const CLIENT_ID = '1xLf2JHl9N5fGk6p409HAqHzAHcyGwiqXVQh7XE5'
-export const CLIENT_SECRET = 'S8ZKQgCE4o3qmOslqyRfgjJLg1djzOyZtF4xVXiszNI6l9JKbf25PlG7ABPKCZzcAHPUHgc0dOmTncZ6hssiixdcdy9iKZ94yvtdiFGUBQRJHgro51eae47KC6nn8qAr'
+export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
+export const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET
+
+export const SOCIAL_GOOGLE_CLIENT_ID = import.meta.env.VITE_SOCIAL_GOOGLE_CLIENT_ID
+export const SOCIAL_GOOGLE_CLIENT_SECRET = import.meta.env.VITE_SOCIAL_GOOGLE_CLIENT_SECRET
+
+export const SOCIAL_FACEBOOK_CLIENT_ID = import.meta.env.VITE_SOCIAL_FACEBOOK_CLIENT_ID
+export const SOCIAL_FACEBOOK_CLIENT_SECRET = import.meta.env.VITE_SOCIAL_FACEBOOK_CLIENT_SECRET
+
+export const SOCIAL_GOOGLE_PUBLIC_KEY = import.meta.env.VITE_SOCIAL_GOOGLE_PUBLIC_KEY
+export const SOCIAL_FACEBOOK_PUBLIC_KEY = import.meta.env.VITE_SOCIAL_FACEBOOK_PUBLIC_KEY
 
 export const API_BASE_URL = DEBUG ? `http://${API_SERVER_DOMAIN}` : `https://${API_SERVER_DOMAIN}`
 export const SOCKET_BASE_URL = DEBUG ? `ws://${WS_SERVER_DOMAIN}` : `wss://${WS_SERVER_DOMAIN}`
 
-
 export const END_POINTS = {
     auth: {
         login: `${API_BASE_URL}/api/auth/token/`,
-
-
+        convert: `${API_BASE_URL}/api/auth/convert-token/`,
     },
     accounts: {
         user: `${API_BASE_URL}/api/v1/accounts/user/`,
