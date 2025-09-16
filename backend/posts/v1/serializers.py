@@ -24,7 +24,7 @@ class PostLikeSerializer(serializers.ModelSerializer):
 class PostMediaCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostMedia
-        fields = ['post', 'file', 'is_featured']
+        fields = ['id', 'post', 'file', 'is_featured']
 
 
 class PostMediaSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ class PostMediaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PostMedia
-        fields = ['is_featured', 'file', 'ext']
+        fields = ['id', 'is_featured', 'file', 'ext']
 
     def get_ext(self, obj):
         return obj.get_extension()
@@ -55,13 +55,21 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_medias(self, obj):
         queryset = obj.medias.filter(is_active=True)
-        serializer = PostMediaSerializer(queryset, many=True, context=self.context)
+        serializer = PostMediaSerializer(
+            queryset,
+            many=True,
+            context=self.context
+        )
         return serializer.data
 
     def get_likes(self, obj):
         try:
             queryset = obj.like_info
-            serializer = PostLikeSerializer(queryset, many=False, context=self.context)
+            serializer = PostLikeSerializer(
+                queryset,
+                many=False,
+                context=self.context
+            )
             return serializer.data
         except PostLike.DoesNotExist:
             return None
@@ -96,7 +104,11 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_likes(self, obj):
         try:
             queryset = obj.like_info
-            serializer = CommentLikeSerializer(queryset, many=False, context=self.context)
+            serializer = CommentLikeSerializer(
+                queryset,
+                many=False,
+                context=self.context
+            )
             return serializer.data
         except CommentLike.DoesNotExist:
             return None

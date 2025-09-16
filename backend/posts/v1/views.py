@@ -1,10 +1,14 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import (
+    ListAPIView, CreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,11 +21,11 @@ from django.db import transaction
 from core.mixins import OptionalPaginationMixin
 from main.models import FamilyMembers
 
-from posts.models import Post, PostLike, Comment, CommentLike
+from posts.models import Post, PostMedia, PostLike, Comment, CommentLike
 
 from .serializers import (
     PostCreateSerializer, PostSerializer,
-    PostMediaCreateSerializer,
+    PostMediaCreateSerializer, PostMediaSerializer,
     CommentSerializer, CommentCreateSerializer,
 )
 
@@ -185,6 +189,234 @@ class PostListCreateView(
             return Response(
                 {'message': f'Something went wrong: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(
+    summary="Retrieve, update, or delete a post",
+    tags=['Posts'],
+    description=(
+            "Retrieve a single post (GET), update its fields (PATCH), or delete it (DELETE). "
+            "Only the post's author can update or delete it."
+    ),
+    responses={
+        200: OpenApiResponse(
+            response=PostSerializer,
+            description="Post retrieved or updated successfully"
+        ),
+        204: OpenApiResponse(description="Post deleted successfully"),
+        400: OpenApiResponse(description="Validation error"),
+        403: OpenApiResponse(description="Permission denied"),
+        404: OpenApiResponse(description="Post not found"),
+    },
+    examples=[
+        OpenApiExample(
+            "Example GET response",
+            summary="Retrieve a post",
+            description="Returns a post with its details and media",
+            value={
+                "id": 5,
+                "content": "Family trip memories",
+                "author": 2,
+                "created_at": "2025-09-16T12:00:00Z",
+                "media": [
+                    {"id": 10, "file": "https://cdn.site/post10.jpg",
+                     "is_featured": True},
+                    {"id": 11, "file": "https://cdn.site/post11.jpg",
+                     "is_featured": False}
+                ]
+            },
+            response_only=True
+        ),
+        OpenApiExample(
+            "Example PATCH body",
+            summary="Update post content",
+            description="Partial update with just the content field",
+            value={"content": "Updated post text"},
+            request_only=True
+        )
+    ]
+)
+class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.filter(is_active=True)
+    serializer_class = PostCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        post = super().get_object()
+        if post.author.member != self.request.user:
+            if self.request.method in ['PATCH', 'PUT', 'DELETE']:
+                raise PermissionDenied(
+                    "You are not allowed to modify this post."
+                )
+        return post
+
+    def retrieve(self, request, *args, **kwargs):
+        post = self.get_object()
+        serializer = PostSerializer(post, context={'request': request})
+        return Response(serializer.data)
+
+    @transaction.atomic
+    def partial_update(self, request, *args, **kwargs):
+        post = self.get_object()
+        serializer = self.get_serializer(
+            post,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'message': 'Post updated successfully',
+                    'post': PostSerializer(
+                        post,
+                        context={'request': request}
+                    ).data
+                }
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        post = self.get_object()
+        post.delete()
+        return Response(
+            {'message': 'Post deleted successfully'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+@extend_schema(tags=['Posts'])
+class PostMediaManageView(APIView):
+    """
+    Manage media files for a specific post.
+
+    - **POST**: Upload one or more media files to a post
+    - **DELETE**: Delete a specific media from a post
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get_post(self, post_id, user):
+        try:
+            post = Post.objects.get(id=post_id, is_active=True)
+            if post.author.member != user:
+                raise PermissionDenied(
+                    "You are not allowed to modify this post's media."
+                )
+            return post
+        except Post.DoesNotExist:
+            raise PermissionDenied("Post not found or inactive.")
+
+    @extend_schema(
+        operation_id="post_add_media",
+        summary="Add media to a post",
+        description=(
+                "Upload one or more media files to a given post.\n\n"
+                "Accepts multipart/form-data with:\n"
+                "- **media**: one or more files\n"
+                "- **is_featured**: optional boolean flag"
+        ),
+        request={
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "media": {
+                        "type": "array",
+                        "items": {"type": "string", "format": "binary"},
+                    },
+                    "is_featured": {"type": "boolean"}
+                },
+                "required": ["media"]
+            }
+        },
+        responses={
+            201: OpenApiResponse(
+                response=PostMediaSerializer,
+                description="List of created media objects"
+            ),
+            400: OpenApiResponse(description="Validation error")
+        },
+        parameters=[
+            OpenApiParameter(
+                name='post_id',
+                description='ID of the post to attach media to',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            )
+        ]
+    )
+    @transaction.atomic
+    def post(self, request, post_id):
+        post = self.get_post(post_id, request.user)
+        files = request.FILES.getlist('media')
+        is_featured = request.data.get('is_featured', False)
+
+        created_media = []
+        for file in files:
+            media_data = {'post': post.id, 'file': file,
+                          'is_featured': is_featured}
+            serializer = PostMediaCreateSerializer(data=media_data)
+            if serializer.is_valid():
+                created_media.append(serializer.save())
+            else:
+                transaction.set_rollback(True)
+                return Response(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        return Response(
+            PostMediaSerializer(
+                created_media, many=True, context={'request': request}
+            ).data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @extend_schema(
+        operation_id="post_delete_media",
+        summary="Delete a media from a post",
+        description="Delete a single media object belonging to a post by its ID.",
+        responses={
+            204: OpenApiResponse(description="Media deleted successfully"),
+            404: OpenApiResponse(
+                description="Media not found for this post"
+            )
+        },
+        parameters=[
+            OpenApiParameter(
+                name='post_id',
+                description='ID of the post that owns the media',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            ),
+            OpenApiParameter(
+                name='media_id',
+                description='ID of the media to delete',
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH
+            )
+        ]
+    )
+    def delete(self, request, post_id, media_id):
+        post = self.get_post(post_id, request.user)
+        try:
+            media = PostMedia.objects.get(id=media_id, post=post)
+            media.delete()
+            return Response(
+                {'message': 'Media deleted successfully'},
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except PostMedia.DoesNotExist:
+            return Response(
+                {'detail': 'Media not found for this post'},
+                status=status.HTTP_404_NOT_FOUND
             )
 
 
