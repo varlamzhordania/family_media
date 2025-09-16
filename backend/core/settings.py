@@ -89,7 +89,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 ASGI_APPLICATION = "core.asgi.application"
 
-DB_ENGINE = env("DB_ENGINE", default="sqlite3")
+DB_ENGINE = env.str("DB_ENGINE", default="sqlite3")
 
 if DB_ENGINE == "postgresql":
     DATABASES = {
