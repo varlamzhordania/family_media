@@ -7,6 +7,7 @@ services:
     volumes:
       - ./backend/:/home/family/backend
       - ./cert/:/home/family/cert
+      - .env:/home/family/.env
     command: >
       bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn -c conf/gunicorn_conf.py core.wsgi:application"
 #      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
@@ -25,6 +26,7 @@ services:
     volumes:
       - ./backend/:/home/family/backend
       - ./cert/:/home/family/cert
+      - .env:/home/family/.env
     command: >
       bash -c "daphne -u /var/run/django.sock -b 0.0.0.0 -p 8001 core.asgi:application"
     ports:
