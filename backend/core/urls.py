@@ -23,6 +23,7 @@ from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/settings/",include("core.v1.urls",namespace="v1-settings")),
     path("api/v1/accounts/", include("accounts.v1.urls", namespace="v1-accounts")),
     path("api/v1/posts/", include("posts.v1.urls", namespace="v1-posts")),
     path("api/v1/events/", include("events.v1.urls", namespace="v1-events")),

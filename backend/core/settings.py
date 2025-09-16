@@ -26,7 +26,6 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-
 ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['*'])
 
 INSTALLED_APPS = [
@@ -100,7 +99,8 @@ if DB_ENGINE == "postgresql":
             'USER': env('DB_USER', default='myuser'),
             'PASSWORD': env('DB_PASSWORD', default='mypassword'),
             'HOST': env('DB_HOST', default='localhost'),
-            'PORT': env('DB_PORT', default='5432'),  # Default port for PostgreSQL
+            'PORT': env('DB_PORT', default='5432'),
+            # Default port for PostgreSQL
         }
     }
 elif DB_ENGINE == "mysql":
@@ -111,7 +111,8 @@ elif DB_ENGINE == "mysql":
             'USER': env("DB_USER", default='myuser'),
             'PASSWORD': env("DB_PASSWORD", default='mypassword'),
             'HOST': env("DB_HOST", default='localhost'),
-            'PORT': env("DB_PORT", default='3306'),  # Default port for MySQL
+            'PORT': env("DB_PORT", default='3306'),
+            # Default port for MySQL
         }
     }
 else:
@@ -163,7 +164,8 @@ PARLER_LANGUAGES = {
     ),
     'default': {
         'fallback': 'en',  # defaults to PARLER_DEFAULT_LANGUAGE_CODE
-        'hide_untranslated': False,  # the default; let .active_translations() return fallbacks too.
+        'hide_untranslated': False,
+        # the default; let .active_translations() return fallbacks too.
     }
 }
 
@@ -189,8 +191,27 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = 'accounts.User'
 
+# Google configuration
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.str("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env.str("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
+
+# Facebook configuration
+SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY = env.str("SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY")
+SOCIAL_AUTH_FACEBOOK_OAUTH2_SECRET = env.str("SOCIAL_AUTH_FACEBOOK_OAUTH2_SECRET")
+
+# Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+]
+
 AUTHENTICATION_BACKENDS = [
+
     'accounts.backends.EmailBackend',
+
+    # Google  OAuth2
+    'social_core.backends.google.GoogleOAuth2',
+
     'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
@@ -214,6 +235,19 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 25
 }
 
+# optional: auto-create users
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Family Media API',
     'DESCRIPTION': '',
@@ -233,14 +267,20 @@ else:
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
             'CONFIG': {
-                "hosts": [env('REDIS_HOST', default='redis://localhost:6379')],
-                "capacity": 1000,  # 🔹 Increase buffer size to allow more messages
-                "expiry": 10,  # 🔹 Reduce expiry to clear old messages faster
+                "hosts": [
+                    env('REDIS_HOST', default='redis://localhost:6379')],
+                "capacity": 1000,
+                # 🔹 Increase buffer size to allow more messages
+                "expiry": 10,
+                # 🔹 Reduce expiry to clear old messages faster
             },
         },
     }
 
-USE_HTTPS_IN_ABSOLUTE_URLS = env.bool("USE_HTTPS_IN_ABSOLUTE_URLS", default=False)
+USE_HTTPS_IN_ABSOLUTE_URLS = env.bool(
+    "USE_HTTPS_IN_ABSOLUTE_URLS",
+    default=False
+)
 SERVER_DOMAIN = env("BACKEND_DOMAIN", default="http://127.0.0.1:8000")
 # eg. react,svelte...etc
 FRONTEND_DOMAIN = env("FRONTEND_DOMAIN", default="http://localhost:5173")
@@ -252,7 +292,6 @@ if DEBUG:
     CORS_ALLOWED_ORIGINS = [SERVER_DOMAIN, FRONTEND_DOMAIN]
 else:
     CORS_ALLOWED_ORIGINS = [f"https://{FRONTEND_DOMAIN}"]
-
 
 if not DEBUG:
     CACHES = {
@@ -278,8 +317,6 @@ else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     DEFAULTS['ACCESS_TOKEN_EXPIRE_SECONDS'] = 1.577e7
     FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 Mb limit
-
-
 
 EMAIL_HOST = env("EMAIL_HOST", default="")
 EMAIL_PORT = env("EMAIL_PORT", default="")
@@ -313,8 +350,6 @@ CELERY_BEAT_SCHEDULE = {
 
 CKEDITOR_5_CONFIGS = BASE_CKEDITOR_5_CONFIGS
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
-
-
 
 LOGGING = {
     'version': 1,

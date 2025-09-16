@@ -11,15 +11,15 @@ const RootLayout = ({children}) => {
     const [theme, colorMode] = useMode();
 
     return (
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback={<Loader/>}>
             <ColorModeContext.Provider value={colorMode}>
-                <ThemeProvider theme={theme}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <CssBaseline/>
-                        <Toaster position={"top-right"} toastOptions={{duration: 3000}}/>
-                        {children}
-                    </LocalizationProvider>
-                </ThemeProvider>
+                    <ThemeProvider theme={theme}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <CssBaseline/>
+                            <Toaster position={"top-right"} toastOptions={{duration: 3000}}/>
+                            {children}
+                        </LocalizationProvider>
+                    </ThemeProvider>
             </ColorModeContext.Provider>
         </Suspense>
     )

@@ -3,13 +3,13 @@ import {lazy} from "react";
 import RootLayout from "@layout/RootLayout.jsx";
 import AuthLayout from "@layout/AuthLayout.jsx";
 import ErrorPage from "@pages/Error.jsx";
-import Loader from "@components/Loader/Loader.jsx";
 
 // Lazy load the components
 const Login = lazy(() => import("@pages/Login.jsx"));
 const Register = lazy(() => import("@pages/Register.jsx"));
 const ForgetPassword = lazy(() => import("@pages/ForgetPassword.jsx"));
 const ResetPassword = lazy(() => import("@pages/ResetPassword.jsx"));
+const GoogleSocial = lazy(() => import("@pages/GoogleSocial.jsx"));
 const RootPage = lazy(() => import("@pages/Root.jsx"));
 const Home = lazy(() => import("@pages/Home.jsx"));
 const Account = lazy(() => import("@pages/Account.jsx"));
@@ -77,6 +77,10 @@ export const router = createBrowserRouter([
                     {
                         path: "/auth/reset-password/:uid/:token/",
                         element: <AuthLayout><ResetPassword/></AuthLayout>,
+                    },
+                    {
+                        path: "/auth/social/google/",
+                        element: <AuthLayout><GoogleSocial/></AuthLayout>,
                     },
                 ]
             }

@@ -4,7 +4,6 @@ import {
     Card,
     CardContent,
     CardHeader,
-    Container,
     Divider,
     TextField,
     Typography,
@@ -17,6 +16,7 @@ import {loginService} from "@lib/services/authService.js";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import toast from "react-hot-toast";
 import {handleError} from "@lib/utils/service.js";
+import {SOCIAL_GOOGLE_PUBLIC_KEY} from "@src/conf/index.js";
 
 const Login = () => {
     const [accessToken, setAccessToken] = useAccessToken()
@@ -62,6 +62,17 @@ const Login = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleGoogleLogin = () => {
+        const redirectUri = `${window.location.origin}/auth/social/google/`;
+        const scope = encodeURIComponent("openid email profile");
+        window.location.href =
+            `https://accounts.google.com/o/oauth2/v2/auth` +
+            `?client_id=${SOCIAL_GOOGLE_PUBLIC_KEY}` +
+            `&redirect_uri=${redirectUri}` +
+            `&response_type=token` +   // <-- gives access_token
+            `&scope=${scope}`;
     };
 
     const handleSubmit = (e) => {
@@ -130,8 +141,8 @@ const Login = () => {
                     </Button>
                     <Divider>OR</Divider>
                     <Box sx={{maxWidth: "450px"}}>
-                        <Button variant={"soft"} color={"grey"} fullWidth
-                                sx={{justifyContent: "flex-start", textTransform: "unset"}}>
+                        <Button variant={"soft"} color={"grey"} fullWidth onClick={handleGoogleLogin}
+                                sx={{my: 2, justifyContent: "flex-start", textTransform: "unset"}}>
                             <Google sx={{mx: 1}}/>
                             <Typography variant={"body1"} fontWeight={"bold"}>Continue with Google</Typography>
                         </Button>
