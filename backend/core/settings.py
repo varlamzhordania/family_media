@@ -100,7 +100,6 @@ if DB_ENGINE == "postgresql":
             'PASSWORD': env('DB_PASSWORD', default='mypassword'),
             'HOST': env('DB_HOST', default='localhost'),
             'PORT': env('DB_PORT', default='5432'),
-            # Default port for PostgreSQL
         }
     }
 elif DB_ENGINE == "mysql":
@@ -112,7 +111,6 @@ elif DB_ENGINE == "mysql":
             'PASSWORD': env("DB_PASSWORD", default='mypassword'),
             'HOST': env("DB_HOST", default='localhost'),
             'PORT': env("DB_PORT", default='3306'),
-            # Default port for MySQL
         }
     }
 else:
