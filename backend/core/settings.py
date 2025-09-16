@@ -90,7 +90,6 @@ WSGI_APPLICATION = "core.wsgi.application"
 ASGI_APPLICATION = "core.asgi.application"
 
 DB_ENGINE = env.str("DB_ENGINE", default="sqlite3").lower().strip()
-print(DB_ENGINE)
 
 if DB_ENGINE == "postgresql":
     DATABASES = {
