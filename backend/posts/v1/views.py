@@ -351,7 +351,14 @@ class PostMediaManageView(APIView):
         ]
     )
     @transaction.atomic
-    def post(self, request, post_id):
+    def post(self, request: Request, post_id: int) -> Response:
+
+        if not post_id:
+            return Response(
+                {'message': 'Post id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         post = self.get_post(post_id, request.user)
         files = request.FILES.getlist('media')
         is_featured = request.data.get('is_featured', False)
@@ -404,7 +411,23 @@ class PostMediaManageView(APIView):
             )
         ]
     )
-    def delete(self, request, post_id, media_id):
+    def delete(
+            self,
+            request: Request,
+            post_id: int,
+            media_id: int
+            ) -> Response:
+        if not post_id:
+            return Response(
+                {'message': 'Post ID is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not media_id:
+            return Response(
+                {'message': 'Media ID is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         post = self.get_post(post_id, request.user)
         try:
             media = PostMedia.objects.get(id=media_id, post=post)
