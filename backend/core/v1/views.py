@@ -15,6 +15,8 @@ class ConfigApiView(APIView):
     def get(self, request: Request, format=None, **kwargs) -> Response:
         data = {
             "google_public_key": settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
+            "android_google_public_key": settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
+            "ios_google_public_key": settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
             "facebook_public_key": settings.SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY,
         }
 
