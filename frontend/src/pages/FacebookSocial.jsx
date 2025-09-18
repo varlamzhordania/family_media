@@ -34,7 +34,7 @@ export default function FacebookSocial() {
             setLoading(true)
             handleLogin(accessToken)
         } else {
-            navigate("/auth/login/");
+            // navigate("/auth/login/");
         }
     }, [navigate]);
 
