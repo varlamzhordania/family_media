@@ -20,7 +20,7 @@ export default function FacebookSocial() {
         } catch (e) {
             setError("Failed to log in with Facebook. Please try again.");
             handleError(e)
-            navigate("/auth/login/");
+            // navigate("/auth/login/");
         } finally {
             window.history.replaceState(null, "", window.location.pathname);
             setLoading(false)
