@@ -99,11 +99,11 @@ export const router = createBrowserRouter([
                 children: [
                     {
                         path: "/privacy-policy/",
-                        element: <AuthLayout> <PrivacyPolicy/></AuthLayout>
+                        element: <AuthLayout><PrivacyPolicy/></AuthLayout>
                     },
                     {
                         path: "/terms-of-service/",
-                        element: <AuthLayout> <TermsOfService/></AuthLayout>
+                        element: <AuthLayout><TermsOfService/></AuthLayout>
                     },
                     {
                         path: "/data-deletion/",

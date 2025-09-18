@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {startTransition, useEffect, useState} from "react";
 import {Navigate, useNavigate, useLocation} from "react-router-dom";
 import {handleError} from "@lib/utils/service.js";
 import {googleLoginService} from "@lib/services/authService.js";
@@ -58,8 +58,10 @@ export default function GoogleSocial() {
         const token = hashParams.get("access_token");
 
         if (token) {
-            setLoading(true);
-            handleLogin(token);
+            startTransition(() => {
+                setLoading(true);
+                handleLogin(token);
+            });
         } else {
             setError("No login token was found. Please try signing in again.");
         }
@@ -98,7 +100,7 @@ export default function GoogleSocial() {
                                 variant="soft"
                                 type={"button"}
                                 fullWidth
-                                onClick={() => navigate("/")}
+                                onClick={() => navigate("/auth/login")}
                             >
                                 Go Back
                             </Button>
