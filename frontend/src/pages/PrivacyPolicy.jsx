@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
                     <Typography variant="h6">Contact</Typography>
                     <Typography>
                         If you have any questions about this Privacy Policy, contact us at:
-                        <strong> support@yourdomain.com</strong>.
+                        <strong> support@familyarbore.com</strong>.
                     </Typography>
                 </Box>
             </CardContent>
