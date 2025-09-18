@@ -24,10 +24,10 @@ const AuthLayout = ({children}) => {
                     </Container>
                 </Grid>
                 <Grid item xs={12} sm={6} md={6} lg={6} component={Paper}
-                      sx={{borderRadius: {xs: "18px 18px 0 0", sm: "18px 0 0 18px",position:"relative",}}}>
+                      sx={{borderRadius: {xs: "18px 18px 0 0", sm: "18px 0 0 18px", position: "relative",}}}>
                     <Box component={"img"} src={"/logo2.jpg"} alt={"logo"}
                          sx={{width: 64, height: 64, objectFit: "cover", position: "absolute", top: 10, left: 10}}/>
-                    <Container maxWidth={"sm"} sx={{...centerElement, height: "100%"}}>
+                    <Container maxWidth={"sm"} sx={{...centerElement, maxHeight: "100%"}}>
                         {children}
                     </Container>
                 </Grid>

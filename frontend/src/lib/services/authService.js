@@ -128,3 +128,32 @@ export const googleLoginService = async (token) => {
         throw error;
     }
 }
+
+export const facebookLoginService = async (token) => {
+    const prepData = {
+        grant_type: 'convert_token',
+        client_id: SOCIAL_FACEBOOK_CLIENT_ID,
+        client_secret: SOCIAL_FACEBOOK_CLIENT_SECRET,
+        backend: 'facebook',
+        token: token,
+    };
+
+    try {
+        const response = await fetch(END_POINTS.auth.convert, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify(prepData),
+        });
+
+        if (response.ok) {
+            return await response.json();
+        } else {
+            throw await response.json()
+        }
+    } catch (error) {
+        throw error;
+    }
+}

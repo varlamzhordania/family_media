@@ -1,12 +1,12 @@
 import {useEffect, useState} from "react";
 import {Navigate, useNavigate} from "react-router-dom";
 import {handleError} from "@lib/utils/service.js";
-import {googleLoginService} from "@lib/services/authService.js";
+import {facebookLoginService} from "@lib/services/authService.js";
 import toast from "react-hot-toast";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import {Alert, Box, Card, CardContent, CardHeader, CircularProgress, Typography} from "@mui/material";
 
-export default function GoogleSocial() {
+export default function FacebookSocial() {
     const [accessToken, setAccessToken] = useAccessToken()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("");
@@ -14,11 +14,11 @@ export default function GoogleSocial() {
 
     const handleLogin = async (token) => {
         try {
-            const response = await googleLoginService(token)
+            const response = await facebookLoginService(token)
             setAccessToken(response.access_token, null)
             toast.success("Successfully logged in.")
         } catch (e) {
-            setError("Failed to log in with Google. Please try again.");
+            setError("Failed to log in with Facebook. Please try again.");
             handleError(e)
             navigate("/auth/login/");
         } finally {
@@ -44,7 +44,7 @@ export default function GoogleSocial() {
 
     return <Card elevation={0}>
         <CardHeader
-            title="Google Sign In"
+            title="Facebook Sign In"
             titleTypographyProps={{
                 fontWeight: "bold",
                 fontSize: 42,
@@ -67,7 +67,7 @@ export default function GoogleSocial() {
                 {error && <Alert severity="error">{error}</Alert>}
                 <Typography>
                     {loading
-                        ? "Verifying your Google account and signing you in..."
+                        ? "Verifying your facebook account and signing you in..."
                         : "Redirecting..."}
                 </Typography>
                 {loading && <CircularProgress color="primary"/>}

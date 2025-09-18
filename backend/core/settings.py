@@ -191,8 +191,12 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Google configuration
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.str("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
-ANDROID_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.str("ANDROID_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
-IOS_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.str("IOS_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
+ANDROID_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.str(
+    "ANDROID_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"
+)
+IOS_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.str(
+    "IOS_SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"
+)
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env.str(
     "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"
 )
@@ -204,6 +208,16 @@ SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY = env.str(
 SOCIAL_AUTH_FACEBOOK_OAUTH2_SECRET = env.str(
     "SOCIAL_AUTH_FACEBOOK_OAUTH2_SECRET"
 )
+
+# Facebook configuration
+SOCIAL_AUTH_FACEBOOK_KEY = SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY
+SOCIAL_AUTH_FACEBOOK_SECRET = SOCIAL_AUTH_FACEBOOK_OAUTH2_SECRET
+
+# Email is not sent by default, to get it, you must request the email permission.
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
 
 # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
@@ -217,6 +231,10 @@ AUTHENTICATION_BACKENDS = [
 
     # Google  OAuth2
     'social_core.backends.google.GoogleOAuth2',
+
+    # Facebook OAuth2
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
 
     'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',

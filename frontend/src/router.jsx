@@ -10,6 +10,7 @@ const Register = lazy(() => import("@pages/Register.jsx"));
 const ForgetPassword = lazy(() => import("@pages/ForgetPassword.jsx"));
 const ResetPassword = lazy(() => import("@pages/ResetPassword.jsx"));
 const GoogleSocial = lazy(() => import("@pages/GoogleSocial.jsx"));
+const FacebookSocial = lazy(() => import("@pages/FacebookSocial.jsx"));
 const RootPage = lazy(() => import("@pages/Root.jsx"));
 const Home = lazy(() => import("@pages/Home.jsx"));
 const Account = lazy(() => import("@pages/Account.jsx"));
@@ -17,6 +18,9 @@ const Family = lazy(() => import("@pages/Family.jsx"));
 const FamilyDashboard = lazy(() => import("@pages/FamilyDashboard.jsx"));
 const Invitation = lazy(() => import("@pages/Invitation.jsx"));
 const Message = lazy(() => import("@pages/Message.jsx"));
+const PrivacyPolicy = lazy(() => import("@pages/PrivacyPolicy.jsx"))
+const TermsOfService = lazy(() => import("@pages/TermsOfService.jsx"))
+const DataDeletion = lazy(() => import("@pages/DataDeletion.jsx"))
 
 export const router = createBrowserRouter([
     {
@@ -51,7 +55,7 @@ export const router = createBrowserRouter([
                     {
                         path: "/invitations/:code/",
                         element: <Invitation/>
-                    }
+                    },
                 ]
             },
             // {
@@ -81,6 +85,29 @@ export const router = createBrowserRouter([
                     {
                         path: "/auth/social/google/",
                         element: <AuthLayout><GoogleSocial/></AuthLayout>,
+                    },
+                    {
+                        path: "/auth/social/facebook/",
+                        element: <AuthLayout><FacebookSocial/></AuthLayout>,
+                    },
+                ]
+            },
+
+            {
+                path: "",
+                element: null,
+                children: [
+                    {
+                        path: "/privacy-policy/",
+                        element: <AuthLayout> <PrivacyPolicy/></AuthLayout>
+                    },
+                    {
+                        path: "/terms-of-service/",
+                        element: <AuthLayout> <TermsOfService/></AuthLayout>
+                    },
+                    {
+                        path: "/data-deletion/",
+                        element: <AuthLayout><DataDeletion/></AuthLayout>
                     },
                 ]
             }

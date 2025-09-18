@@ -16,7 +16,7 @@ import {loginService} from "@lib/services/authService.js";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import toast from "react-hot-toast";
 import {handleError} from "@lib/utils/service.js";
-import {SOCIAL_GOOGLE_PUBLIC_KEY} from "@src/conf/index.js";
+import {SOCIAL_FACEBOOK_PUBLIC_KEY, SOCIAL_GOOGLE_PUBLIC_KEY} from "@src/conf/index.js";
 
 const Login = () => {
     const [accessToken, setAccessToken] = useAccessToken()
@@ -74,6 +74,18 @@ const Login = () => {
             `&response_type=token` +   // <-- gives access_token
             `&scope=${scope}`;
     };
+
+    const handleFacebookLogin = () => {
+        const redirectUri = `${window.location.origin}/auth/social/facebook/`;
+        const scope = encodeURIComponent("email,public_profile");
+        window.location.href =
+            `https://www.facebook.com/v23.0/dialog/oauth` +
+            `?client_id=${SOCIAL_FACEBOOK_PUBLIC_KEY}` +
+            `&redirect_uri=${redirectUri}` +
+            `&response_type=token` + // this gives access_token
+            `&scope=${scope}`;
+    };
+
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -146,7 +158,7 @@ const Login = () => {
                             <Google sx={{mx: 1}}/>
                             <Typography variant={"body1"} fontWeight={"bold"}>Continue with Google</Typography>
                         </Button>
-                        <Button variant={"soft"} color={"grey"} fullWidth
+                        <Button variant={"soft"} color={"grey"} fullWidth onClick={handleFacebookLogin}
                                 sx={{my: 2, justifyContent: "flex-start", textTransform: "unset"}}>
                             <Facebook sx={{mx: 1}}/>
                             <Typography variant={"body1"} fontWeight={"bold"}>Continue with Facebook</Typography>
