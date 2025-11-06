@@ -9,8 +9,8 @@ services:
       - ./cert/:/home/family/cert
       - .env:/home/family/.env
     command: >
-      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn -c conf/gunicorn_conf.py core.wsgi:application"
-#      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+    #      bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn -c conf/gunicorn_conf.py core.wsgi:application"
     ports:
       - "8000:8000"
     depends_on:
@@ -47,6 +47,37 @@ services:
       - '3000:80'  # Exposes the frontend on port 3000
     depends_on:
       - gunicorn
+  livekit:
+    image: livekit/livekit-server
+    container_name: livekit
+    restart: no
+    command: >
+      --bind 0.0.0.0
+      --redis-host redis:6379
+      --config /etc/livekit/livekit.yaml
+    env_file:
+      - .env
+    ports:
+      - "7880:7880"  # API / signaling
+      - "7881:7881/udp"  # WebRTC media
+    volumes:
+      - ./livekit/livekit.yaml:/etc/livekit/livekit.yaml
+#      - ./certs/turn.crt:/etc/livekit/turn.crt
+#      - ./certs/turn.key:/etc/livekit/turn.key
+
+  coturn:
+    image: instrumentisto/coturn
+    container_name: coturn
+    restart: no
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
+      - "5349:5349"
+      - "5349:5349/udp"
+    env_file:
+      - .env
+
+
   nginx:
     restart: no
     container_name: nginx

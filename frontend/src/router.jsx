@@ -18,6 +18,7 @@ const Family = lazy(() => import("@pages/Family.jsx"));
 const FamilyDashboard = lazy(() => import("@pages/FamilyDashboard.jsx"));
 const Invitation = lazy(() => import("@pages/Invitation.jsx"));
 const Message = lazy(() => import("@pages/Message.jsx"));
+const Call = lazy(() => import("@pages/Call.jsx"));
 const PrivacyPolicy = lazy(() => import("@pages/PrivacyPolicy.jsx"))
 const TermsOfService = lazy(() => import("@pages/TermsOfService.jsx"))
 const DataDeletion = lazy(() => import("@pages/DataDeletion.jsx"))
@@ -55,6 +56,17 @@ export const router = createBrowserRouter([
                     {
                         path: "/invitations/:code/",
                         element: <Invitation/>
+                    },
+                ],
+            },
+            {
+                path: "",
+                element: <RootPage defaultLayout={false}/>,
+                errorElement: <RootLayout><ErrorPage/></RootLayout>,
+                children: [
+                    {
+                        path: "/call/:room_id/",
+                        element: <Call/>
                     },
                 ]
             },

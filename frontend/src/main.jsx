@@ -8,6 +8,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './index.css'
+import '@livekit/components-styles';
 import {router} from "./router.jsx";
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";

@@ -7,8 +7,8 @@ from channels.layers import get_channel_layer
 
 from main.models import Family, FamilyMembers
 
-from .models import Room, Message
-from chat.v1.serializers import MessageSerializer
+from .models import Room, Message, VideoCall
+from chat.v1.serializers import MessageSerializer, RoomSerializer
 from .consumers import ChatConsumer
 
 
@@ -61,21 +61,99 @@ def delete_family_member(sender, instance, **kwargs):
 
 def send_layer_signal(channel_layer, channel_name, action, serializer):
     message = {"action": action, "data": serializer}
-    async_to_sync(channel_layer.group_send)(channel_name, {'type': 'broadcast_message', 'message': message})
-    async_to_sync(channel_layer.group_send)(channel_name, {'type': 'send_notification', 'message': message})
+    async_to_sync(channel_layer.group_send)(
+        channel_name,
+        {'type': 'broadcast_message', 'message': message}
+    )
+    async_to_sync(channel_layer.group_send)(
+        channel_name,
+        {'type': 'send_notification', 'message': message}
+    )
     return True
 
 
 @receiver(post_save, sender=Message)
 def notify_new_message(sender, instance, created, **kwargs):
-    serializer = ChatConsumer.get_serializer_data_to_dict(None, MessageSerializer(instance))
+    serializer = ChatConsumer.get_serializer_data_to_dict(
+        None,
+        MessageSerializer(instance)
+    )
     if created:
         action = "new_message"
         channel_layer = get_channel_layer()
         channel_name = f"private_chat_{instance.room.id}"
-        transaction.on_commit(lambda: send_layer_signal(channel_layer, channel_name, action, serializer))
+        transaction.on_commit(
+            lambda: send_layer_signal(
+                channel_layer,
+                channel_name,
+                action,
+                serializer
+            )
+        )
     else:
         action = "edit_message"
         channel_layer = get_channel_layer()
         channel_name = f"private_chat_{instance.room.id}"
-        transaction.on_commit(lambda: send_layer_signal(channel_layer, channel_name, action, serializer))
+        transaction.on_commit(
+            lambda: send_layer_signal(
+                channel_layer,
+                channel_name,
+                action,
+                serializer
+            )
+        )
+
+
+@receiver(post_save, sender=VideoCall)
+def notify_video_call_participants(
+        sender,
+        instance: VideoCall,
+        created,
+        **kwargs
+):
+    """
+    Notify all participants in the chat room when a video call starts or ends.
+    """
+    room = instance.room
+    participants = room.participants.all()
+    action = "video_call_started" if instance.status == VideoCall.StatusChoices.ONGOING else "video_call_ended"
+
+    serializer = RoomSerializer(
+        room,
+        many=False
+    ).data
+
+    channel_layer = get_channel_layer()
+
+    for user in participants:
+        # send notification to each user's personal channel
+        async_to_sync(channel_layer.group_send)(
+            f"user_{user.id}",
+            {
+                "type": "send_notification",
+                "message": {
+                    "action": action,
+                    "results": {
+                        "room": serializer,
+                        "call_id": instance.id,
+                        "status": instance.status,
+                        "creator": instance.creator.get_full_name,
+                    },
+                },
+            }
+        )
+
+
+    async_to_sync(channel_layer.group_send)(
+        f"private_chat_{room.id}",
+        {
+            "type": "broadcast_message",
+            "message": {
+                "action": action,
+                "data": {
+                    "call_id": instance.id,
+                    "status": instance.status,
+                },
+            },
+        }
+    )

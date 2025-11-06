@@ -18,3 +18,21 @@ export const createService = async (data) => {
         throw error
     }
 }
+
+export const createLiveKitTokenService = async (data) => {
+    try {
+        const response = await fetch(END_POINTS.chat.livekit.token, {
+            method: "POST",
+            headers: getHeaders("json"),
+            body: data
+        })
+        if (response.ok) {
+            return await response.json()
+        } else {
+            throw await response.json()
+        }
+    } catch (error) {
+        console.error("An error occurred:", error);
+        throw error
+    }
+}

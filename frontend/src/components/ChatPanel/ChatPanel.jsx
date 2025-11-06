@@ -1,12 +1,12 @@
 import {
     Avatar, Badge,
-    Box,
+    Box, Button,
     Card,
     CardContent,
-    CardHeader, IconButton,
+    CardHeader, IconButton, Stack, Tooltip,
 } from "@mui/material";
 import {getAvatar, getChatName, getOpponent, updateRoomLastMessage} from "@lib/utils/chat.jsx";
-import {ArrowBack, Diversity2} from "@mui/icons-material";
+import {ArrowBack, Call, Diversity2, PhoneCallback} from "@mui/icons-material";
 import {HorizontalStyle, VerticalStyle} from "@lib/theme/styles.js";
 import {useEffect, useRef, useState} from "react";
 import {SOCKET_BASE_URL} from "@src/conf/index.js";
@@ -14,7 +14,7 @@ import useWebSocket from "react-use-websocket";
 import {completeServerUrl, parseData} from "@lib/utils/socket.js";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import Chat from "@components/ChatPanel/Chat.jsx";
-import {useSearchParams} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
 import InputForm from "@components/ChatPanel/InputForm.jsx";
 import ChatMenu from "@components/ChatPanel/ChatMenu.jsx";
 import DeleteModal from "@components/ChatPanel/DeleteModal.jsx";
@@ -32,6 +32,7 @@ const ChatPanel = ({selected, setSelected, height, matches}) => {
     const [selectMessage, setSelectMessage] = useState(null)
     const [replyTo, setReplyTo] = useState(null);
     const [editing, setEditing] = useState(null);
+    const navigate = useNavigate()
 
     const [searchParams] = useSearchParams()
     const messageContainerRef = useRef(null);
@@ -128,7 +129,9 @@ const ChatPanel = ({selected, setSelected, height, matches}) => {
         });
     };
 
-
+    const handleStartCall = () => {
+        navigate(`/call/${selected?.id || room}`)
+    }
     const handleClose = () => {
         setContextMenu(null);
         setShowModal(false)
@@ -156,6 +159,9 @@ const ChatPanel = ({selected, setSelected, height, matches}) => {
         const action = lastJsonMessage?.action
         if (action !== "delete_message")
             scrollEnd()
+
+        console.log(selected)
+
     }, [messages]);
 
     const scrollEnd = () => {
@@ -209,6 +215,21 @@ const ChatPanel = ({selected, setSelected, height, matches}) => {
                             titleTypographyProps={{variant: "h5", fontWeight: "bold"}}
                             subheader={isTyping?.length > 0 ? isTyping?.join(", ") + " is typing..." : ""}
                             subheaderTypographyProps={{variant: "caption"}}
+                            action={
+                                <Stack justifyContent={"center"} alignItems={"center"} p={1}>
+                                    <Button variant={"soft"}
+                                            color={selected?.video_call?.status === "ongoing" ? "info" : "action"}
+                                            onClick={handleStartCall}
+                                            startIcon={
+                                                selected?.video_call?.status === "ongoing" ? <PhoneCallback/> : <Call/>
+                                            }
+                                    >
+                                        {
+                                            selected?.video_call?.status === "ongoing" ? "Join Call" : "Start Call"
+                                        }
+                                    </Button>
+                                </Stack>
+                            }
                 />
             }
             {

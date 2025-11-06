@@ -349,6 +349,12 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_password", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default='Family Media')
 
+# Livekit
+LIVEKIT_API_KEY = env.str('LIVEKIT_API_KEY', default="")
+LIVEKIT_API_SECRET = env.str('LIVEKIT_API_SECRET', default="")
+LIVEKIT_URL = env.str('LIVEKIT_URL', default='http://localhost:7880')
+LIVEKIT_WS_URL = env.str('LIVEKIT_WS_URL', default='ws://localhost:7881')
+
 # Uncomment if Using RabbitMQ
 # RABBITMQ_HOST = env("RABBITMQ_HOST", default="")
 # RABBITMQ_PORT = env("RABBITMQ_PORT", default="")

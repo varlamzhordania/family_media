@@ -7,6 +7,8 @@ import {useRoomsContext} from "@lib/context/RoomsContext.jsx";
 import useSearchParamChange from "@lib/hooks/useSearchParamChange.jsx";
 import {showMessageNotification, updateRoomLastMessage} from "@lib/utils/chat.jsx";
 import {useUserContext} from "@lib/context/UserContext.jsx";
+import toast from "react-hot-toast";
+import {Call, CallEnd} from "@mui/icons-material";
 
 /**
  * @typedef {Object} WebSocketContextType
@@ -47,6 +49,23 @@ export const WebSocketProvider = ({children}) => {
                         break;
                     case "new_message":
                         handleNewMessage(data)
+                        break;
+                    case "video_call_started":
+                        toast.success(`call started in ${data.room?.title || "a room"}`, {
+                            icon: <Call/>,
+                            duration: 5000,
+                            id: `notification-call-${data.room.id}`
+                        });
+                        break;
+                    case "video_call_ended":
+                        toast.error(
+                            `call ended in ${data.room?.title || "a room"}`,
+                            {
+                                icon: <CallEnd/>,
+                                duration: 5000,
+                                id: `notification-call-${data.room.id}`,
+                            }
+                        );
                         break;
                     default:
                         console.log("Unknown action on message", action);

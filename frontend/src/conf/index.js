@@ -55,6 +55,9 @@ export const END_POINTS = {
 
     },
     chat: {
-        index: `${API_BASE_URL}/api/v1/chat/`
+        index: `${API_BASE_URL}/api/v1/chat/`,
+        livekit: {
+            token: `${API_BASE_URL}/api/v1/chat/livekit/token/`,
+        }
     }
 }

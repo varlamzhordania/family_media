@@ -7,8 +7,8 @@ from channels.db import database_sync_to_async
 from rest_framework.renderers import JSONRenderer
 from asgiref.sync import sync_to_async
 
-from .models import Message, Room
-from chat.v1.serializers import MessageSerializer
+from chat.v1.serializers import MessageSerializer, PublicUserSerializer
+from .models import Message, Room, VideoCall
 
 User = get_user_model()
 
@@ -60,7 +60,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def broadcast_message(self, data: dict, action=None):
         if (isinstance(data, dict) and
-                (data.get("type", '') == "send_notification" or data.get("type", '') == "broadcast_message")):
+                (data.get(
+                    "type",
+                    ''
+                ) == "send_notification" or data.get(
+                    "type",
+                    ''
+                ) == "broadcast_message")):
             action = data['message']['action']
             data = data['message']['data']
 
@@ -146,7 +152,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def pull_history(self, room_id):
         queryset = Message.objects.filter(room_id=room_id)[:25]
-        return self.get_serializer_data_to_dict(MessageSerializer(queryset, many=True))
+        return self.get_serializer_data_to_dict(
+            MessageSerializer(queryset, many=True)
+        )
 
     @database_sync_to_async
     def set_read(self, data):
@@ -156,7 +164,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = Message.objects.get(id=data['id'])
             message.have_read.add(self.user)
             queryset.append(message)
-        return self.get_serializer_data_to_dict(MessageSerializer(queryset, many=True))
+        return self.get_serializer_data_to_dict(
+            MessageSerializer(queryset, many=True)
+        )
 
     @database_sync_to_async
     def save_message(self, data):
@@ -170,9 +180,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 content=message,
                 reply_to=reply_to_message
             )
-            return self.get_serializer_data_to_dict(MessageSerializer(obj, many=False))
-        obj = Message.objects.create(user=self.user, room_id=self.room_id, content=message)
-        return self.get_serializer_data_to_dict(MessageSerializer(obj, many=False))
+            return self.get_serializer_data_to_dict(
+                MessageSerializer(obj, many=False)
+            )
+        obj = Message.objects.create(
+            user=self.user,
+            room_id=self.room_id,
+            content=message
+        )
+        return self.get_serializer_data_to_dict(
+            MessageSerializer(obj, many=False)
+        )
 
     @database_sync_to_async
     def edit_message(self, data):
@@ -186,8 +204,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 instance.is_edited = True
                 instance.edited_at = timezone.now()
                 instance.save()
-                return self.get_serializer_data_to_dict(MessageSerializer(instance, many=False))
-            except ObjectDoesNotExist:
+                return self.get_serializer_data_to_dict(
+                    MessageSerializer(instance, many=False)
+                )
+            except Message.DoesNotExist:
                 # Handle the case where the message with the given ID does not exist
                 return {"error": "Message not found"}
             except Exception as e:
@@ -240,9 +260,153 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             # User is an admin and a member of the family
             if (
-                    message.room.family.admins.filter(pk=user.pk).exists() and
+                    message.room.family.admins.filter(
+                        pk=user.pk
+                    ).exists() and
                     message.room.family.members.filter(pk=user.pk).exists()
             ):
                 return True
 
         return False
+
+
+class VideoCallConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+        self.room_id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = f'video_call_{self.room_id}'
+
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+            )
+        await self.accept()
+
+        # Join call in DB and notify others
+        await self.send_leave_join_call("joined_call")
+        await self.join_call()
+
+    async def disconnect(self, close_code):
+        await self.leave_call()
+        await self.send_leave_join_call("leave_call")
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+            )
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        action = data.get("action")
+
+        action_map = {
+            "offer": self.broadcast_message,
+            "answer": self.broadcast_message,
+            "ice_candidate": self.broadcast_message,
+            "start_call": lambda _: self.start_call(),
+            "end_call": lambda _: self.end_call(),
+            "leave_call": lambda _: self.send_leave_join_call(
+                "leave_call"
+            ),
+            "joined_call": lambda _: self.send_leave_join_call(
+                "joined_call"
+            ),
+            "mute": self.broadcast_message,
+            "unmute": self.broadcast_message,
+        }
+
+        handler = action_map.get(action)
+        if handler:
+            await handler(data)
+
+    async def send_leave_join_call(self, action):
+        """Send leave/join events to all participants."""
+        data = {
+            "action": action,
+            "results": {
+                "user": self.user.id,
+                "username": self.user.get_full_name,
+            }
+        }
+        await self.broadcast_message(data)
+
+    async def broadcast_message(self, data):
+        """Send WebRTC signaling events to all participants."""
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {"type": "video_message", "message": data}
+        )
+
+    async def video_message(self, event):
+        """Receive messages from group and forward to WebSocket."""
+        await self.send(text_data=json.dumps(event["message"]))
+
+    async def broadcast_status(self, action):
+        """Broadcast participant updates."""
+        participants = await self.get_participants()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "video_message",
+                "message": {
+                    "action": action,
+                    "results": {"participants": participants},
+                }
+            }
+        )
+
+    # --- Database operations ---
+    @database_sync_to_async
+    def join_call(self):
+        room = Room.objects.get(id=self.room_id)
+        call, created = VideoCall.objects.get_or_create(
+            room=room,
+            defaults={"creator": self.user,
+                      "status": VideoCall.StatusChoices.ONGOING}
+        )
+        call.participants.add(self.user)
+        if call.status != VideoCall.StatusChoices.ONGOING:
+            call.mark_started()
+        return call
+
+    @database_sync_to_async
+    def leave_call(self):
+        try:
+            call = VideoCall.objects.get(room_id=self.room_id)
+            call.participants.remove(self.user)
+            if call.participants.count() == 0:
+                call.mark_end()
+        except VideoCall.DoesNotExist:
+            pass
+
+    @database_sync_to_async
+    def start_call(self):
+        try:
+            call = VideoCall.objects.get(room_id=self.room_id)
+            if call.status != VideoCall.StatusChoices.ONGOING:
+                call.mark_started()
+        except VideoCall.DoesNotExist:
+            pass
+
+    @database_sync_to_async
+    def end_call(self):
+        try:
+            call = VideoCall.objects.get(room_id=self.room_id)
+            call.mark_end()
+        except VideoCall.DoesNotExist:
+            pass
+
+    @database_sync_to_async
+    def get_participants(self):
+        try:
+            call = VideoCall.objects.get(room_id=self.room_id)
+            serializer = PublicUserSerializer(
+                call.participants.all(),
+                many=True
+                )
+            return self._serializer_to_dict(serializer)
+        except VideoCall.DoesNotExist:
+            return []
+
+    def _serializer_to_dict(self, serializer):
+        """Convert DRF serializer to dict."""
+        return json.loads(JSONRenderer().render(serializer.data).decode())
