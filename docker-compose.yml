@@ -73,9 +73,14 @@ services:
       - "3478:3478"
       - "3478:3478/udp"
       - "5349:5349"
-      - "5349:5349/udp"
-    env_file:
-      - .env
+      - "5349:5349/udp",
+      - "49152-65535:49152-65535/udp"
+    volumes:
+      - ./coturn/turnserver.conf:/etc/turnserver.conf
+      - ./certs/cert.crt:/etc/turnserver/turn.crt
+      - ./certs/private.key:/etc/turnserver/turn.key
+#    env_file:
+#      - .env
 
 
   nginx:
