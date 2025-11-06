@@ -7,13 +7,13 @@ rtc:
   port_range_end: 60000
   use_external_ip: false
 
-#  turn_servers:
-#    - host: localhost
-#      port: 3478
-#      # tls, tcp, or udp
-#      protocol: udp
-#      username: "admin"
-#      credential: "admin"
+  turn_servers:
+    - host: localhost
+      port: 3478
+      # tls, tcp, or udp
+      protocol: udp
+      username: "familyarboreturnuser"
+      credential: "familyarboreturnpassword"
 
 #redis:
 #  address: redis:6379
