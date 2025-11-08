@@ -239,19 +239,39 @@ class PasswordResetRequestView(APIView):
         serializer = self.serializer_class(
             data=request.data,
             context={'request': request}
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data["email"]
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"message": "If that email exists, a password reset link has been sent."},
+                status=status.HTTP_200_OK,
             )
-        if serializer.is_valid():
-            user = User.objects.get(
-                email=serializer.validated_data['email']
-                )
+
+        # Try main email helper (with internal fallback)
+        try:
             send_password_reset_email(user)
             return Response(
-                {"message": "Password reset link sent to your email."},
-                status=status.HTTP_200_OK
+                {"message": "If that email exists, a password reset link has been sent."},
+                status=status.HTTP_200_OK,
             )
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
+
+        except Exception as e:
+            print(f"All password-reset email attempts failed for {email}: {e}")
+
+            return Response(
+                {
+                    "detail": (
+                        "We’re having trouble delivering the password reset email right now. "
+                        "If you don’t receive it soon, please try again later."
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
 
