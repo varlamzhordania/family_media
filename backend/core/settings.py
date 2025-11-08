@@ -325,6 +325,15 @@ else:
         # optional, for users typing www.
     ]
 
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{FRONTEND_DOMAIN}",
+    f"https://www.{FRONTEND_DOMAIN}",
+]
+
+CSRF_TRUSTED_ORIGINS += [
+    f"https://{SERVER_DOMAIN}",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
 if not DEBUG:
