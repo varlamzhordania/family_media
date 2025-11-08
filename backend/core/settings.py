@@ -305,17 +305,27 @@ USE_HTTPS_IN_ABSOLUTE_URLS = env.bool(
     "USE_HTTPS_IN_ABSOLUTE_URLS",
     default=False
 )
-SERVER_DOMAIN = env("BACKEND_DOMAIN", default="http://127.0.0.1:8000")
-# eg. react,svelte...etc
-FRONTEND_DOMAIN = env("FRONTEND_DOMAIN", default="http://localhost:5173")
+SERVER_DOMAIN = env("BACKEND_DOMAIN", default="127.0.0.1:8000")
+FRONTEND_DOMAIN = env("FRONTEND_DOMAIN", default="localhost:5173")
 
 BASE_DOMAIN = FRONTEND_DOMAIN
-FRONTEND_URL = FRONTEND_DOMAIN
+FRONTEND_URL = f"https://{FRONTEND_DOMAIN}"
 
 if DEBUG:
-    CORS_ALLOWED_ORIGINS = [SERVER_DOMAIN, FRONTEND_DOMAIN]
+    CORS_ALLOWED_ORIGINS = [
+        f"http://{FRONTEND_DOMAIN}",
+        f"https://{FRONTEND_DOMAIN}",
+        f"http://{SERVER_DOMAIN}",
+        f"https://{SERVER_DOMAIN}",
+    ]
 else:
-    CORS_ALLOWED_ORIGINS = [f"https://{FRONTEND_DOMAIN}"]
+    CORS_ALLOWED_ORIGINS = [
+        FRONTEND_URL,
+        f"https://www.{FRONTEND_DOMAIN}",
+        # optional, for users typing www.
+    ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 if not DEBUG:
     CACHES = {
