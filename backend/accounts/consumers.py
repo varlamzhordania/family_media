@@ -82,7 +82,7 @@ class UserConsumer(AsyncWebsocketConsumer):
                 else:
                     room = Room.objects.create(
                         type=Room.TypeChoices.PRIVATE,
-                        title=f"Private Room between {dm}-{self.user.id}",
+                        title=f"Private Room between {dm_target.get_fulll_name}-{self.user.get_full_name}",
                         created_by=self.user
                     )
                     room.participants.set([self.user.id, dm])
