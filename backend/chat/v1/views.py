@@ -157,6 +157,7 @@ class LiveKitTokenView(APIView):
                     "livekit_url": settings.LIVEKIT_WS_URL,
                     "room_id": room.id,
                     "room_name": room.title,
+                    "room_type": room.type,
                     "ice_servers": ice_servers,
                 }, status=status.HTTP_200_OK
             )

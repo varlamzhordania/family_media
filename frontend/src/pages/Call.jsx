@@ -4,7 +4,7 @@ import {parseData} from "@lib/utils/socket.js";
 import {SOCKET_BASE_URL} from "@src/conf/index.js";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
 import {useParams} from "react-router-dom";
-import {Box, Button, Card, Stack} from "@mui/material";
+import {Box, Button, Card, Stack, Typography} from "@mui/material";
 import {
     RoomContext, VideoConference, LiveKitRoom,
 } from "@livekit/components-react";
@@ -148,10 +148,31 @@ const Call = () => {
                         p: 4,
                     }}
                 >
-                    <h2 style={{margin: 0}}>Join Call</h2>
-                    <p style={{color: "#555", textAlign: "center", margin: 0}}>
-                        You are about to join the meeting room <strong>{info?.room_name}</strong>.
-                    </p>
+                    <Typography variant="h5" component="h2" sx={{mb: 1, textAlign: "center"}}>
+                        Join Call
+                    </Typography>
+
+                    <Typography
+                        variant="body1"
+                        sx={{color: "text.secondary", textAlign: "center", m: 0}}
+                    >
+                        {info?.room_type === "private" && (
+                            <>
+                                You are about to join a <strong>private meeting</strong>.
+                            </>
+                        )}
+                        {info?.room_type === "group" && (
+                            <>
+                                You are about to join a <strong>group meeting</strong>.
+                            </>
+                        )}
+                        {info?.room_type === "family" && (
+                            <>
+                                You are about to join a <strong>family meeting</strong>.
+                            </>
+                        )}
+                    </Typography>
+
                     <Button
                         onClick={handleStartCall}
                         variant="soft"

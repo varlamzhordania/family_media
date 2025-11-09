@@ -131,7 +131,27 @@ class LiveKitTokenRequestSerializer(serializers.Serializer):
     room_id = serializers.IntegerField()
 
 
+class IceServerResponseSerializer(serializers.Serializer):
+    urls = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="List of STUN/TURN URLs (e.g. ['stun:stun.l.google.com:19302'])"
+    )
+    username = serializers.CharField(
+        allow_null=True,
+        required=False,
+        help_text="Only required for TURN servers"
+    )
+    credential = serializers.CharField(
+        allow_null=True,
+        required=False,
+        help_text="Only required for TURN servers"
+    )
+
+
 class LiveKitTokenResponseSerializer(serializers.Serializer):
     token = serializers.CharField()
     livekit_url = serializers.CharField()
     room_id = serializers.IntegerField()
+    room_name = serializers.CharField()
+    room_type = serializers.CharField()
+    ice_servers = IceServerResponseSerializer(many=True)
