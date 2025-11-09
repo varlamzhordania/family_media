@@ -1,4 +1,5 @@
-from django.core.validators import MinValueValidator
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
@@ -14,6 +15,12 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError(_('The Email field must be set'))
         email = self.normalize_email(email)
+
+        if not extra_fields.get("username"):
+            base_username = email.split('@')[0]
+            username = f"{base_username}_{uuid.uuid4().hex[:6]}"
+            extra_fields["username"] = username
+
         user = self.model(email=email, **extra_fields)  # remove username=email
         user.set_password(password)
         user.save(using=self._db)
