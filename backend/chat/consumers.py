@@ -16,13 +16,12 @@ User = get_user_model()
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope.get("user", None)
+        self.room_id = self.scope['url_route']['kwargs'].get('room_id')
+        self.room_group_name = f'private_chat_{self.room_id}'
 
         if not self.user or not self.user.is_authenticated:
             await self.close(code=403)
             return
-
-        self.room_id = self.scope['url_route']['kwargs']['room_id']
-        self.room_group_name = f'private_chat_{self.room_id}'
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -33,10 +32,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send_history()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        if hasattr(self, "room_id"):
+            try:
+                await self.channel_layer.group_discard(
+                    self.room_group_name,
+                    self.channel_name
+                )
+            except Exception as e:
+                print(
+                    f"[ChatConsumer] Disconnect cleanup failed: {e}"
+                )
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -277,32 +282,44 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 class VideoCallConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.user = self.scope.get("user", None)
+        # Always set essential attributes first
+        self.room_id = self.scope["url_route"]["kwargs"].get("room_id")
+        self.room_group_name = f"video_call_{self.room_id}"
+        self.user = self.scope.get("user")
 
+        # Reject unauthenticated users
         if not self.user or not self.user.is_authenticated:
             await self.close(code=403)
             return
 
-        self.room_id = self.scope['url_route']['kwargs']['room_id']
-        self.room_group_name = f'video_call_{self.room_id}'
-
+        # Safely join channel layer group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
+
+        # Accept connection after group join
         await self.accept()
 
-        # Join call in DB and notify others
+        # Notify others and update DB
         await self.send_leave_join_call("joined_call")
         await self.join_call()
 
     async def disconnect(self, close_code):
-        await self.leave_call()
-        await self.send_leave_join_call("leave_call")
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        # Only perform cleanup if room_id was set
+        if hasattr(self, "room_id"):
+            try:
+                await self.leave_call()
+                await self.send_leave_join_call("leave_call")
+                await self.channel_layer.group_discard(
+                    self.room_group_name,
+                    self.channel_name
+                )
+            except Exception as e:
+                # Optional: log the error, but don't crash
+                print(
+                    f"[VideoCallConsumer] Disconnect cleanup failed: {e}"
+                )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
