@@ -18,14 +18,20 @@ class UserConsumer(AsyncWebsocketConsumer):
             await self.accept()
             await self.update_user_status(online=True)
             await self.send_room_list()
-            await self.channel_layer.group_add(f'user_{self.user.id}', self.channel_name)
+            await self.channel_layer.group_add(
+                f'user_{self.user.id}',
+                self.channel_name
+                )
         else:
-            await self.close()
+            await self.close(code=403)
 
     async def disconnect(self, close_code):
         if self.user.is_authenticated:
             await self.update_user_status(online=False)
-            await self.channel_layer.group_discard(f'user_{self.user.id}', self.channel_name)
+            await self.channel_layer.group_discard(
+                f'user_{self.user.id}',
+                self.channel_name
+                )
 
     async def receive(self, text_data=None, bytes_data=None):
         json_text_data = json.loads(text_data)
@@ -74,11 +80,16 @@ class UserConsumer(AsyncWebsocketConsumer):
                 return None
             try:
                 dm_target = User.objects.get(pk=dm)
-                room = Room.objects.filter(type=Room.TypeChoices.PRIVATE, participants=self.user.id).filter(
+                room = Room.objects.filter(
+                    type=Room.TypeChoices.PRIVATE,
+                    participants=self.user.id
+                    ).filter(
                     participants=dm_target
                 )
                 if room.exists():
-                    return self.get_serializer_data_to_dict(RoomSerializer(room.first(), many=False))
+                    return self.get_serializer_data_to_dict(
+                        RoomSerializer(room.first(), many=False)
+                        )
                 else:
                     room = Room.objects.create(
                         type=Room.TypeChoices.PRIVATE,
@@ -86,12 +97,17 @@ class UserConsumer(AsyncWebsocketConsumer):
                         created_by=self.user
                     )
                     room.participants.set([self.user.id, dm])
-                    return self.get_serializer_data_to_dict(RoomSerializer(room, many=False))
+                    return self.get_serializer_data_to_dict(
+                        RoomSerializer(room, many=False)
+                        )
 
             except User.DoesNotExist:
                 return None
             except Exception as e:
-                print("An error occurred while trying to create room: ", str(e))
+                print(
+                    "An error occurred while trying to create room: ",
+                    str(e)
+                    )
                 return None
 
     @database_sync_to_async
@@ -102,7 +118,9 @@ class UserConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_room_list(self):
         queryset = self.user.participants.filter(is_active=True)
-        return self.get_serializer_data_to_dict(RoomSerializer(queryset, many=True))
+        return self.get_serializer_data_to_dict(
+            RoomSerializer(queryset, many=True)
+            )
 
     def get_serializer_data_to_dict(self, serializer):
         serialized_data = JSONRenderer().render(serializer.data)

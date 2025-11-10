@@ -15,7 +15,12 @@ User = get_user_model()
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.user = self.scope["user"]
+        self.user = self.scope.get("user", None)
+
+        if not self.user or not self.user.is_authenticated:
+            await self.close(code=403)
+            return
+
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'private_chat_{self.room_id}'
 
@@ -272,14 +277,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 class VideoCallConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.user = self.scope["user"]
+        self.user = self.scope.get("user", None)
+
+        if not self.user or not self.user.is_authenticated:
+            await self.close(code=403)
+            return
+
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'video_call_{self.room_id}'
 
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
-            )
+        )
         await self.accept()
 
         # Join call in DB and notify others
@@ -292,7 +302,7 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
-            )
+        )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -402,7 +412,7 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
             serializer = PublicUserSerializer(
                 call.participants.all(),
                 many=True
-                )
+            )
             return self._serializer_to_dict(serializer)
         except VideoCall.DoesNotExist:
             return []
