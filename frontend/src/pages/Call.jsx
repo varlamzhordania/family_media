@@ -3,7 +3,7 @@ import useWebSocket from "react-use-websocket";
 import {parseData} from "@lib/utils/socket.js";
 import {SOCKET_BASE_URL} from "@src/conf/index.js";
 import {useAccessToken} from "@lib/hooks/useToken.jsx";
-import {useParams} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import {Box, Button, Card, Stack, Typography} from "@mui/material";
 import {
     RoomContext, VideoConference, LiveKitRoom,
@@ -173,30 +173,37 @@ const Call = () => {
                         )}
                     </Typography>
 
-                    <Button
-                        onClick={handleStartCall}
-                        variant="soft"
-                        size="large"
-                        sx={{
-                            textTransform: "none",
-                            borderRadius: 2,
-                            px: 4,
-                            py: 1.2,
-                        }}
-                        disabled={loadingInfo || info === null}
-                    >
-                        {
-                            loadingInfo ? (
-                                "Preparing..."
-                            ) : info ? (
-                                "Join"
-                            ) : (
-                                "Unable to join the call"
-                            )
-                        }
+                    <Stack direction={"row"} gap={1}>
+                        <Button
+                            variant="soft"
+                            color={"action"}
+                            size="large"
+                            component={Link}
+                            to={"/"}
+                        >
+                            Back to Home
+                        </Button>
+
+                        <Button
+                            onClick={handleStartCall}
+                            variant="soft"
+                            size="large"
+                            disabled={loadingInfo || info === null}
+                        >
+                            {
+                                loadingInfo ? (
+                                    "Preparing..."
+                                ) : info ? (
+                                    "Join"
+                                ) : (
+                                    "Unable to join the call"
+                                )
+                            }
 
 
-                    </Button>
+                        </Button>
+                    </Stack>
+
                 </Stack>
             ) : (
                 // Active Call View

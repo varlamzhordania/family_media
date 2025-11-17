@@ -10,6 +10,28 @@ export const playNotificationSound = (url = "/alert.mp3") => {
     const audio = new Audio(url);
     audio.play();
 };
+/**
+ * Plays a sound repeatedly (e.g., for incoming calls) and returns a controller
+ * that can be used to stop it.
+ *
+ * @param {string} [url="/alert.mp3"] - The URL of the audio file to be played.
+ * @returns {{ stop: Function }} An object with a stop method to end playback.
+ */
+export const playRingingSound = (url = "/phone-ringing.mp3") => {
+    const audio = new Audio(url);
+    audio.loop = true;
+    audio.play().catch(err => {
+        console.warn("Failed to play audio:", err);
+    });
+
+    return {
+        stop: () => {
+            audio.pause();
+            audio.currentTime = 0;
+        },
+    };
+};
+
 
 /**
  * Repeats a React component a specified number of times.

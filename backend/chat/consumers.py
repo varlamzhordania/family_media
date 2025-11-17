@@ -384,15 +384,34 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
     # --- Database operations ---
     @database_sync_to_async
     def join_call(self):
+        from django.utils import timezone
+
         room = Room.objects.get(id=self.room_id)
+
+        # Try retrieving existing call
         call, created = VideoCall.objects.get_or_create(
             room=room,
-            defaults={"creator": self.user,
-                      "status": VideoCall.StatusChoices.ONGOING}
+            defaults={
+                "creator": self.user,
+                "status": VideoCall.StatusChoices.ONGOING,
+                "started_at": timezone.now(),
+            }
         )
+
+        # If call existed and was ended, "re-open" it
+        if not created and call.status == VideoCall.StatusChoices.ENDED:
+            call.creator = self.user  # update host if needed
+            call.status = VideoCall.StatusChoices.ONGOING
+            call.started_at = timezone.now()  # reset start time
+            call.ended_at = None  # clear end time
+            call.save(
+                update_fields=["creator", "status", "started_at",
+                               "ended_at"]
+                )
+
+        # Add participant if not already present
         call.participants.add(self.user)
-        if call.status != VideoCall.StatusChoices.ONGOING:
-            call.mark_started()
+
         return call
 
     @database_sync_to_async

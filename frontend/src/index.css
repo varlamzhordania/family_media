@@ -71,3 +71,9 @@ swiper-container::part(bullet-active) {
     width: 0;
     height: 0;
 }
+
+@keyframes ringing {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

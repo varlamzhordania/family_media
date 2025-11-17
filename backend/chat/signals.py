@@ -115,7 +115,7 @@ def notify_video_call_participants(
     Notify all participants in the chat room when a video call starts or ends.
     """
     room = instance.room
-    participants = room.participants.all()
+    participants = room.participants.exclude(id=instance.creator.id)
     action = "video_call_started" if instance.status == VideoCall.StatusChoices.ONGOING else "video_call_ended"
 
     serializer = RoomSerializer(
@@ -138,22 +138,8 @@ def notify_video_call_participants(
                         "call_id": instance.id,
                         "status": instance.status,
                         "creator": instance.creator.get_full_name,
+                        "creator_id": instance.creator.id,
                     },
                 },
             }
         )
-
-
-    async_to_sync(channel_layer.group_send)(
-        f"private_chat_{room.id}",
-        {
-            "type": "broadcast_message",
-            "message": {
-                "action": action,
-                "data": {
-                    "call_id": instance.id,
-                    "status": instance.status,
-                },
-            },
-        }
-    )
