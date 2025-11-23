@@ -86,7 +86,7 @@ const Call = () => {
         const fetchToken = async () => {
             try {
                 setLoadingInfo(true)
-                const response = await createLiveKitTokenService(JSON.stringify({room_id}));
+                const response = await createLiveKitTokenService({room_id});
                 setInfo(response);
             } catch (err) {
                 handleError(err)

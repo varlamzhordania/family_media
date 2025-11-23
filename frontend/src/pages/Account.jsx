@@ -179,7 +179,7 @@ const TableItem = ({data, dataField, setData}) => {
                     prepData[dataField] = myRef.current.value
                     if (dataField === "phone_number")
                         prepData["phone_number"] = prepData["phone_number"].replace(/\s/g, '');
-                    const response = await userPatchService(JSON.stringify(prepData), "json")
+                    const response = await userPatchService(prepData)
                     setUser(response, user)
                     toast.success(data[dataField].label + " updated successfully.")
                 } catch (error) {

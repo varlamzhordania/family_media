@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
+from django.contrib.auth import get_user_model
 
 from main.v1.serializers import FamilySerializer
 from accounts.v1.serializers import PublicUserSerializer
 
 from chat.models import Room, Message, MessageMedia, VideoCall
+
+User = get_user_model()
 
 
 class MessageMediaSerializer(serializers.ModelSerializer):
@@ -155,3 +158,83 @@ class LiveKitTokenResponseSerializer(serializers.Serializer):
     room_name = serializers.CharField()
     room_type = serializers.CharField()
     ice_servers = IceServerResponseSerializer(many=True)
+
+
+class GroupCreateSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255)
+    description = serializers.CharField(allow_blank=True, required=False)
+    participants = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=False,
+    )
+
+    def validate_participants(self, users):
+        users = list(set(users))  # remove duplicates
+
+        # if len(users) < 2:
+        #     raise serializers.ValidationError(
+        #         "A group must have at least 3 total participants (including you)."
+        #     )
+
+        qs = User.objects.filter(id__in=users)
+        if qs.count() != len(users):
+            raise serializers.ValidationError(
+                "Some participants do not exist."
+            )
+
+        return users
+
+
+class GroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ["title", "description", "avatar"]
+        extra_kwargs = {
+            "title": {"required": False},
+            "description": {"required": False},
+            "avatar": {"required": False},
+        }
+
+    def validate(self, attrs):
+        room = self.instance
+        user = self.context["request"].user
+
+        # Make sure user is participant
+        if user not in room.participants.all():
+            raise serializers.ValidationError(
+                "You are not a member of this group."
+                )
+        return attrs
+
+class AddParticipantsSerializer(serializers.Serializer):
+    participants = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=False,
+    )
+
+    def validate_participants(self, users):
+        users = list(set(users))
+        qs = User.objects.filter(id__in=users)
+        if qs.count() != len(users):
+            raise serializers.ValidationError("Some users do not exist.")
+        return users
+
+class RemoveParticipantsSerializer(serializers.Serializer):
+    participants = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=False,
+    )
+
+    def validate(self, attrs):
+        users = attrs["participants"]
+
+        # Cannot remove creator
+        room = self.context["room"]
+        creator_id = room.created_by.id if room.created_by else None
+
+        if creator_id in users:
+            raise serializers.ValidationError(
+                "You cannot remove the group creator."
+            )
+
+        return attrs

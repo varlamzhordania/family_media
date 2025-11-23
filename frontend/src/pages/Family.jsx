@@ -40,11 +40,11 @@ const Family = () => {
                 <Grid item xs={12}>
                     <FamilyJoin query={familyQueryset}/>
                 </Grid>
-                    {familyQueryset.isLoading && <FamilyCardSkeleton/>}
-                    {
-                        familyQueryset?.data?.map((item, index) => <FamilyCard data={item} query={familyQueryset}
-                                                                               key={index}/>)
-                    }
+                {familyQueryset.isLoading && <FamilyCardSkeleton/>}
+                {
+                    familyQueryset?.data?.map((item, index) => <FamilyCard data={item} query={familyQueryset}
+                                                                           key={index}/>)
+                }
             </Grid>
         </Grid>
     )
@@ -85,7 +85,7 @@ const FamilyJoin = ({query}) => {
         if (!value) return;
 
         try {
-            const response = await joinService(JSON.stringify({code: value.toString()}));
+            const response = await joinService({code: value.toString()});
             toast.success(response.message);
             query.refetch();
 
@@ -104,7 +104,7 @@ const FamilyJoin = ({query}) => {
 
     return (
         <Grid item xs={12}>
-            <Box sx={{p: 1, display: "flex", justifyContent: "space-between", alignItems: "center",flexWrap:"wrap"}}
+            <Box sx={{p: 1, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap"}}
                  component={Paper}>
                 <Box sx={{
                     display: "flex",
@@ -125,7 +125,7 @@ const FamilyJoin = ({query}) => {
                     />
                     <Button variant={"soft"} color={"secondary"} onClick={handleJoin}>JOIN</Button>
                 </Box>
-                <Box sx={{p:1}}>
+                <Box sx={{p: 1}}>
                     <Button variant={"soft"} startIcon={<Diversity1/>} onClick={handleDrawer}>
                         BUILD YOUR OWN FAMILY
                     </Button>

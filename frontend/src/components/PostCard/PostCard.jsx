@@ -19,6 +19,7 @@ import VideoPlayer from "@components/VideoPlayer/VideoPlayer.jsx";
 import {useRelationsContext} from "@lib/context/RelationsContext.jsx";
 import {useMembershipsContext} from "@lib/context/MembershipsContext.jsx";
 import {handleName} from "@lib/utils/family.js";
+import {handleError} from "@lib/utils/service.js";
 
 register();
 
@@ -67,11 +68,11 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
                 action: "UNLIKE",
             }
             try {
-                const {likes_count} = await likeService(JSON.stringify(prepData))
+                const {likes_count} = await likeService(prepData)
                 setLiked(false)
                 setLikeCounter(likes_count)
             } catch (error) {
-                console.log(error)
+                handleError(error)
             }
 
 
@@ -82,11 +83,11 @@ export const PostCard = ({data, handleComment, handleCommentDrawer}) => {
                 action: "LIKE",
             }
             try {
-                const {likes_count} = await likeService(JSON.stringify(prepData))
+                const {likes_count} = await likeService(prepData)
                 setLiked(true)
                 setLikeCounter(likes_count)
             } catch (error) {
-                console.log(error)
+                handleError(error)
             }
         }
     }

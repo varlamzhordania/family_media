@@ -4,5 +4,5 @@ export const ROOMS_KEY = 'rooms';
 
 // Hook functions for tokens
 export const useRooms = () => {
-    return useLocalStorage(ROOMS_KEY, null);
+    return useLocalStorage(ROOMS_KEY, []);
 };

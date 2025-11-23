@@ -52,7 +52,6 @@ const FamilyMembers = ({family, query}) => {
     }
 
 
-
     return (
         <Card>
             <List sx={{maxHeight: "300px", overflowY: "auto"}}>
@@ -75,7 +74,7 @@ const FamilyMembers = ({family, query}) => {
                                         </Avatar>
                                     </Badge>
                                 </ListItemAvatar>
-                                <ListItemText primary={member?.id === user?.id ? "You" : handleName(relations,member)}
+                                <ListItemText primary={member?.id === user?.id ? "You" : handleName(relations, member)}
                                               secondary={isCreator(member, query) ? "Creator" : isAdmin(member, query) ? "Admin" : "Member"}
                                 />
                                 {
@@ -131,7 +130,7 @@ const FriendMenuItems = ({user, selectedMember}) => {
     const handleAddFriend = async () => {
         try {
 
-            const response = await friendshipsSendRequestService(JSON.stringify({action: "request"}), selectedMember?.id)
+            const response = await friendshipsSendRequestService({action: "request"}, selectedMember?.id)
             toast.success(response.detail)
         } catch (e) {
             handleError(e)
@@ -141,7 +140,7 @@ const FriendMenuItems = ({user, selectedMember}) => {
 
     const handleRemoveFriend = async () => {
         try {
-            const response = await friendshipsSendRequestService(JSON.stringify({action: "remove"}), selectedMember?.id)
+            const response = await friendshipsSendRequestService({action: "remove"}, selectedMember?.id)
             setFriendships(prevState => prevState.filter(item => item.id !== selectedMember.id))
             toast.success(response.detail)
         } catch (e) {
@@ -174,11 +173,11 @@ const FriendMenuItems = ({user, selectedMember}) => {
 const ExtraMenuItems = ({family, query, user, selectedMember}) => {
 
     const handleGroupPermission = async (action, rank) => {
-        const prepData = JSON.stringify({
+        const prepData = {
             action: action,
             rank: rank,
             member: selectedMember.id
-        })
+        }
         try {
             const {message} = await groupService(family, prepData)
             query.refetch()

@@ -84,7 +84,7 @@ const FabAddPost = ({handleDrawer, showDrawer}) => {
             <Fab
                 sx={{position: "fixed", right: 30, bottom: 30}}
                 size="large"
-                color="secondary"
+                color="primary"
                 aria-label="Write a post"
                 onClick={handleDrawer}
             >

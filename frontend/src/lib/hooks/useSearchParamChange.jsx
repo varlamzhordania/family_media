@@ -1,28 +1,17 @@
-import {useLocation} from 'react-router-dom';
-import {useState, useEffect} from 'react';
-
-export const useQuery = () => {
-    return new URLSearchParams(useLocation().search);
-};
+import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const useSearchParamChange = (param) => {
-    const query = useQuery();
-    const [value, setValue] = useState(query.get(param));
+    const location = useLocation();
+    const [value, setValue] = useState(() => {
+        const query = new URLSearchParams(location.search);
+        return query.get(param);
+    });
 
     useEffect(() => {
-        const handleSearchParamChange = () => {
-            const newValue = query.get(param);
-            if (newValue !== value) {
-                setValue(newValue);
-            }
-        };
-
-        handleSearchParamChange();
-        window.addEventListener('popstate', handleSearchParamChange);
-        return () => {
-            window.removeEventListener('popstate', handleSearchParamChange);
-        };
-    }, [param, value, query]);
+        const query = new URLSearchParams(location.search);
+        setValue(query.get(param));
+    }, [location.search, param]);
 
     return value;
 };

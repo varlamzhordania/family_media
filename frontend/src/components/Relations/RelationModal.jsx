@@ -20,7 +20,7 @@ const RelationModal = ({relations, setRelations, member, showModal, handleModal}
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const prepData = JSON.stringify(data)
+            const prepData = data
             const response = await relationUpdateOrCreateService(prepData)
             setRelations(response)
             toast.success(`Your relation to ${member.full_name} updated.`)
@@ -42,7 +42,7 @@ const RelationModal = ({relations, setRelations, member, showModal, handleModal}
 
 
     return (
-        <Modal open={showModal} onClose={handleModal}>
+        <Modal open={showModal} onClose={handleModal} aria-label={"make a relation"}>
             <Card sx={ModalStyle}>
                 <CardHeader title={`Relation`} titleTypographyProps={{variant: "h5", fontWeight: 500}}/>
                 <CardContent>

@@ -54,7 +54,7 @@ const FriendsList = () => {
 
     const handleAccept = async (data) => {
         try {
-            const response = await friendshipsSendRequestService(JSON.stringify({action: "accept"}), data?.from_user?.id)
+            const response = await friendshipsSendRequestService({action: "accept"}, data?.from_user?.id)
             setFriendships(prevState => [...prevState, data?.from_user])
             toast.success(response.detail)
             requestsQuery.refetch()
@@ -65,7 +65,7 @@ const FriendsList = () => {
 
     const handleDecline = async (data) => {
         try {
-            const response = await friendshipsSendRequestService(JSON.stringify({action: "decline"}), data?.from_user?.id)
+            const response = await friendshipsSendRequestService({action: "decline"}, data?.from_user?.id)
             toast.success(response.detail)
             requestsQuery.refetch()
         } catch (e) {
@@ -179,7 +179,7 @@ const FriendMenuItems = ({user, selectedMember, handleClose}) => {
     const handleAddFriend = async () => {
         try {
 
-            const response = await friendshipsSendRequestService(JSON.stringify({action: "request"}), selectedMember?.id)
+            const response = await friendshipsSendRequestService({action: "request"}, selectedMember?.id)
             toast.success(response.detail)
         } catch (e) {
             handleError(e)
@@ -189,7 +189,7 @@ const FriendMenuItems = ({user, selectedMember, handleClose}) => {
 
     const handleRemoveFriend = async () => {
         try {
-            const response = await friendshipsSendRequestService(JSON.stringify({action: "remove"}), selectedMember?.id)
+            const response = await friendshipsSendRequestService({action: "remove"}, selectedMember?.id)
             setFriendships(prevState => prevState.filter(item => item.id !== selectedMember.id))
             toast.success(response.detail)
             handleClose()

@@ -1,120 +1,55 @@
 import {END_POINTS} from "@src/conf/index.js";
-import {getHeaders} from "@lib/utils/service.js";
+import {fetchWithAuth} from "@lib/services/index.js";
 
 export const listService = async (id = null) => {
     let url = END_POINTS.events.index
     if (id)
         url += `?family=${id}`
 
-    try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: getHeaders(),
-        })
-        if (response.ok) {
-            return await response.json()
-        } else {
-            throw await response.json()
-        }
-    } catch (error) {
-        console.error("An error occurred:", error);
-        throw error
-    }
+    return await fetchWithAuth(url, {
+        method: "GET",
+    })
 }
 
-export const createService = async (data, type = "json") => {
+export const createService = async (data) => {
     let url = END_POINTS.events.index
 
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: getHeaders(type),
-            body: data
-        })
-        if (response.ok) {
-            return await response.json()
-        } else {
-            throw await response.json()
-        }
-    } catch (error) {
-        console.error("An error occurred:", error);
-        throw error
-    }
+    return await fetchWithAuth(url, {
+        method: "POST",
+        body: data
+    })
 }
 
-export const patchService = async (data, id, type = "json") => {
+export const patchService = async (data, id) => {
     let url = END_POINTS.events.byID(id)
 
-    try {
-        const response = await fetch(url, {
-            method: "PATCH",
-            headers: getHeaders(type),
-            body: data
-        })
-        if (response.ok) {
-            return await response.json()
-        } else {
-            throw await response.json()
-        }
-    } catch (error) {
-        console.error("An error occurred:", error);
-        throw error
-    }
+    return await fetchWithAuth(url, {
+        method: "PATCH",
+        body: data
+    })
 }
-export const deleteService = async (id, type = "json") => {
+export const deleteService = async (id) => {
     let url = END_POINTS.events.byID(id)
 
-    try {
-        const response = await fetch(url, {
-            method: "DELETE",
-            headers: getHeaders(type),
-        })
-        if (response.ok) {
-            return true
-        } else {
-            throw await response.json()
-        }
-    } catch (error) {
-        console.error("An error occurred:", error);
-        throw error
-    }
+    return await fetchWithAuth(url, {
+        method: "DELETE",
+    })
 }
 
 
-export const sendInvitationService = async (data, type = "json") => {
+export const sendInvitationService = async (data) => {
     let url = END_POINTS.events.invitation
 
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: getHeaders(type),
-            body: data
-        })
-        if (response.ok) {
-            return await response.json()
-        } else {
-            throw await response.json()
-        }
-    } catch (error) {
-        throw error
-    }
+    return await fetchWithAuth(url, {
+        method: "POST",
+        body: data
+    })
 }
 export const checkInvitationService = async (code) => {
     let url = `${END_POINTS.events.invitation}?code=${code}`
 
-    try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: getHeaders(),
-        })
-        if (response.ok) {
-            return await response.json()
-        } else {
-            throw await response.json()
-        }
-    } catch (error) {
-        console.error("An error occurred:", error);
-        throw error
-    }
+    return  await fetchWithAuth(url, {
+        method: "GET",
+    })
 }
 

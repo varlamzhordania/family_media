@@ -13,13 +13,14 @@ import {Facebook, Google, Visibility, VisibilityOff} from "@mui/icons-material";
 import {Link as RouterLink, Navigate} from "react-router-dom";
 import {useRef, useState} from "react";
 import {loginService} from "@lib/services/authService.js";
-import {useAccessToken} from "@lib/hooks/useToken.jsx";
+import {useAccessToken, useRefreshToken} from "@lib/hooks/useToken.jsx";
 import toast from "react-hot-toast";
 import {handleError} from "@lib/utils/service.js";
 import {SOCIAL_FACEBOOK_PUBLIC_KEY, SOCIAL_GOOGLE_PUBLIC_KEY} from "@src/conf/index.js";
 
 const Login = () => {
     const [accessToken, setAccessToken] = useAccessToken()
+    const [refreshToken, setRefreshToken] = useRefreshToken()
     const [showPassword, setShowPassword] = useState(false)
     const [errors, setErrors] = useState({email: false, password: false})
     const [errorMessages, setErrorMessages] = useState({email: "", password: "", general: ""});
@@ -55,7 +56,8 @@ const Login = () => {
         try {
             const response = await loginService(prepData);
             setAccessToken(response.access_token, null)
-            toast.success("Welcome back.")
+            setRefreshToken(response.refresh_token, null);
+            toast.success("Welcome.")
         } catch (error) {
             setErrorMessages(prevState => ({...prevState, general: error?.error}));
             handleError(error)

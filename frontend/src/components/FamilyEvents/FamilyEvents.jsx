@@ -76,7 +76,7 @@ const EventModal = ({family, query, showModal, handleClose, selectedEvent, selec
         e.preventDefault()
         let message
         try {
-            const prepData = JSON.stringify(data);
+            const prepData = data;
             if (editable) {
                 await patchService(prepData, data.id)
                 message = "Changes saved successfully."

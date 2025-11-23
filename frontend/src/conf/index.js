@@ -22,6 +22,7 @@ export const END_POINTS = {
     auth: {
         login: `${API_BASE_URL}/api/auth/token/`,
         convert: `${API_BASE_URL}/api/auth/convert-token/`,
+        refresh: `${API_BASE_URL}/api/auth/token/`,
     },
     accounts: {
         user: `${API_BASE_URL}/api/v1/accounts/user/`,
@@ -58,6 +59,10 @@ export const END_POINTS = {
         index: `${API_BASE_URL}/api/v1/chat/`,
         livekit: {
             token: `${API_BASE_URL}/api/v1/chat/livekit/token/`,
+        },
+        room: {
+            createGroup: `${API_BASE_URL}/api/v1/chat/groups/`,
+            updateGroup: (id) => `${API_BASE_URL}/api/v1/chat/groups/${id}/`,
         }
     }
 }

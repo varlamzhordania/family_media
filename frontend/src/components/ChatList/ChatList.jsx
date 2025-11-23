@@ -32,12 +32,14 @@ const ChatLists = ({selected, setSelected, height}) => {
     }, [rooms]);
 
     return (
-        <List sx={{
-            overflow: "auto",
-            height: height,
-            display: selected ? {xs: "none", lg: "block"} : "block",
-        }}
-              disablePadding>
+        <List
+            sx={{
+                overflow: "auto",
+                height: height,
+                display: selected ? {xs: "none", lg: "block"} : "block",
+            }}
+            disablePadding
+        >
             {
                 sortedRooms?.map((room, index) =>
                     <ChatItem key={index} selected={selected} setSelected={setSelected} data={room}/>
@@ -75,6 +77,8 @@ const ChatItem = ({selected, setSelected, data}) => {
         return <PrivateRoom selected={selected} data={data} handleSelect={handleSelect}/>
     if (data.type === "family")
         return <FamilyRoom selected={selected} data={data} handleSelect={handleSelect}/>
+    if (data.type === "group")
+        return <GroupRoom selected={selected} data={data} handleSelect={handleSelect}/>
 }
 
 const PrivateRoom = ({data, selected, handleSelect}) => {
@@ -108,12 +112,11 @@ const PrivateRoom = ({data, selected, handleSelect}) => {
 }
 
 const FamilyRoom = ({data, selected, handleSelect}) => {
-    const buttonRef = useRef(null)
     const isSelected = selected?.id === data?.id
 
     return (
         <ListItem sx={ChatItemStyle} className={isSelected ? "active" : ""}>
-            <ListItemButton itemRef={buttonRef} onClick={handleSelect}>
+            <ListItemButton onClick={handleSelect}>
                 <ListItemAvatar>
                     <Avatar src={completeServerUrl(getAvatar(data))} alt={data?.title}>
                         <Diversity2/>
@@ -130,6 +133,28 @@ const FamilyRoom = ({data, selected, handleSelect}) => {
     )
 }
 
+
+const GroupRoom = ({data, selected, handleSelect}) => {
+    const isSelected = selected?.id === data?.id
+
+    return (
+        <ListItem sx={ChatItemStyle} className={isSelected ? "active" : ""}>
+            <ListItemButton onClick={handleSelect}>
+                <ListItemAvatar>
+                    <Avatar src={completeServerUrl(getAvatar(data))} alt={data?.title}>
+                        <Diversity2/>
+                    </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary={getChatName(data)}
+                              secondary={getLastMessage(data)}
+                              secondaryTypographyProps={{
+                                  variant: "caption", sx: {wordBreak: "keep-all", width: "max-content"}
+                              }}
+                />
+            </ListItemButton>
+        </ListItem>
+    )
+}
 
 const ChatItemStyle = {
     borderLeft: "3px solid transparent",

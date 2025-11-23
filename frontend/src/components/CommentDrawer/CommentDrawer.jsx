@@ -102,7 +102,7 @@ const Form = ({id,}) => {
                 post_id: id,
                 text: data.text,
             }
-            await createService(JSON.stringify(prepData))
+            await createService(prepData)
             setData({text: ""})
             toast.success("Have submitted a new comment.")
             queryClient.refetchQueries({queryKey: ["comments", id]})

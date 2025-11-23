@@ -38,12 +38,12 @@ const InviteModal = ({family, showModal, handleModalClose}) => {
         const target = targetRef.current.value;
         const expireHour = expireRef?.current?.value
         try {
-            const prepData = JSON.stringify({
+            const prepData = {
                 family: family,
                 service: service,
                 target: target,
                 expire: showAdvanced ? expireHour : null,
-            });
+            };
             await sendInvitationService(prepData);
             handleModalClose();
             toast.success("Invitation sent successfully.");

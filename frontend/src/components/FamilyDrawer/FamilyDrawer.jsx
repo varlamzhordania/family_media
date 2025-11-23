@@ -17,7 +17,7 @@ const FamilyDrawer = ({showDrawer, handleDrawer}) => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const prepData = JSON.stringify(data)
+            const prepData = data
             const response = await createService(prepData)
             console.log(response)
             toast.success("You Family Journey Started.")

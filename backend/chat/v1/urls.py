@@ -1,11 +1,18 @@
 from django.urls import path
 
-from .views import MessageView, LiveKitTokenView
+from .views import (
+    MessageView, LiveKitTokenView, GroupCreateView,
+    GroupUpdateView, GroupAddParticipantsView, GroupRemoveParticipantsView,
+)
 
 app_name = 'v1-chat'
 
 urlpatterns = [
     path('', MessageView.as_view(), name='message_view'),
+    path('groups/', GroupCreateView.as_view(), name='group_create'),
+    path("groups/<int:room_id>/", GroupUpdateView.as_view()),
+    path("groups/<int:room_id>/participants/add/", GroupAddParticipantsView.as_view()),
+    path("groups/<int:room_id>/participants/remove/", GroupRemoveParticipantsView.as_view()),
     path(
         'livekit/token/',
         LiveKitTokenView.as_view(),

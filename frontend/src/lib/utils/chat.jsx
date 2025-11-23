@@ -37,7 +37,7 @@ export const getChatName = (data, user = null) => {
         case "private":
             return getOpponent(data, user).full_name
         case "group":
-            return data?.avatar
+            return data?.title
     }
 }
 

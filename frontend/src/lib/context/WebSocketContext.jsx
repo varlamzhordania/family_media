@@ -8,10 +8,9 @@ import useSearchParamChange from "@lib/hooks/useSearchParamChange.jsx";
 import {showMessageNotification, updateRoomLastMessage} from "@lib/utils/chat.jsx";
 import {useUserContext} from "@lib/context/UserContext.jsx";
 import toast from "react-hot-toast";
-import {Call, CallEnd} from "@mui/icons-material";
 import {useNavigate} from "react-router-dom";
-import {Box, Button, Paper, Stack, Typography} from "@mui/material";
 import {playRingingSound} from "@lib/utils/index.jsx";
+import {showIncomingCallToast} from "@components/IncomingCallToast/showIncomingCallToast.jsx";
 
 /**
  * @typedef {Object} WebSocketContextType
@@ -56,62 +55,13 @@ export const WebSocketProvider = ({children}) => {
                         handleNewMessage(data)
                         break;
                     case "video_call_started":
-                        const roomTitle = data.room?.title || "a room";
-                        const roomId = data.room?.id;
-                        const roomType = data.room.type
-                        ringingController.current = playRingingSound()
-
-                        toast.custom((t) => (
-                            <Box
-                                component={Paper}
-                                sx={{
-                                    p: 1.5,
-                                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                                    width: '300px',
-                                    textAlign: 'center',
-                                    animation: 'ringing 1s infinite',
-                                    borderLeft: '5px solid #4caf50',
-                                }}
-                            >
-                                <Typography variant="h6" sx={{fontWeight: 'bold'}}>
-                                    Incoming Call
-                                </Typography>
-                                <Typography variant="body2" sx={{color: '#555'}}>
-                                    From: {roomType === "private" ? <strong>{data.creator}</strong> :
-                                    <strong>{roomTitle}</strong>}
-                                </Typography>
-                                <Stack direction="row" justifyContent="center" spacing={2} sx={{mt: 2}}>
-                                    <Button
-                                        variant="contained"
-                                        color="success"
-                                        startIcon={<Call/>}
-                                        onClick={() => {
-                                            ringingController.current?.stop();
-                                            ringingController.current = null;
-                                            navigate(`/call/${roomId}`);
-                                            toast.dismiss(t.id);
-                                        }}
-                                    >
-                                        Accept
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        startIcon={<CallEnd/>}
-                                        onClick={() => {
-                                            ringingController.current?.stop();
-                                            ringingController.current = null;
-                                            toast.dismiss(t.id);
-                                            // Optional: send reject action to server
-                                        }}
-                                    >
-                                        Reject
-                                    </Button>
-                                </Stack>
-                            </Box>
-                        ), {
-                            id: `notification-call-${roomId}`,
-                            duration: Infinity, // Keep it until user interacts
+                        ringingController.current = playRingingSound();
+                        showIncomingCallToast({
+                            roomId: data.room?.id,
+                            roomType: data.room?.type,
+                            roomTitle: data.room?.title || "a room",
+                            creator: data.creator,
+                            ringingController,
                         });
                         break;
                     case "video_call_ended":
@@ -149,18 +99,20 @@ export const WebSocketProvider = ({children}) => {
 
 
         useEffect(() => {
-            if (directMessage) {
-                const exists = rooms.find(item => item?.participants?.find(participant => participant.id === Number(directMessage) && item.type === "private"));
-                if (!exists) {
-                    sendJsonMessage({
-                        action: "get_or_create_room",
-                        dm: directMessage,
-                    })
+            if (!directMessage) return;
 
-                }
+            const exists = rooms.find(room =>
+                room.type === "private" &&
+                room.participants.some(p => p.id === Number(directMessage))
+            );
+
+            if (!exists) {
+                sendJsonMessage({
+                    action: "get_or_create_room",
+                    dm: Number(directMessage),
+                });
             }
-
-        }, [directMessage]);
+        }, [directMessage, rooms]);
 
         return (
             <WebSocketContext.Provider value={{sendJsonMessage, lastJsonMessage}}>

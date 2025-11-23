@@ -85,7 +85,7 @@ const CardCover = ({query}) => {
             try {
                 const formData = new FormData()
                 formData.append(field, file)
-                await patchService(formData, "none", query?.data?.id)
+                await patchService(formData, query?.data?.id)
                 query.refetch()
                 toast.success("Changes saved successfully.")
             } catch (error) {
