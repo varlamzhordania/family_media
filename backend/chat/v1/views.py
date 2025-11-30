@@ -19,7 +19,7 @@ from .serializers import (
     LiveKitTokenResponseSerializer,
     GroupCreateSerializer,
     RoomSerializer, GroupUpdateSerializer, AddParticipantsSerializer,
-    RemoveParticipantsSerializer,
+    RemoveParticipantsSerializer, TransferOwnershipSerializer,
 )
 from chat.models import Room, IceServer
 
@@ -396,3 +396,114 @@ class GroupRemoveParticipantsView(APIView):
         room.participants.remove(*users)
 
         return Response(RoomSerializer(room).data, status=200)
+
+
+@extend_schema(
+    tags=["Chat"],
+    summary="Leave a group chat",
+    description=(
+        "Allows a participant to leave a **group chat**.\n\n"
+        "- If the user is the **creator**, they must transfer ownership first.\n"
+        "- After leaving, the user is removed from the participants list.\n"
+    ),
+    responses={
+        200: OpenApiResponse(RoomSerializer),
+        403: OpenApiResponse(description="Cannot leave as creator without transferring ownership."),
+        404: OpenApiResponse(description="Group not found."),
+    }
+)
+class GroupLeaveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, room_id):
+        try:
+            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+        except Room.DoesNotExist:
+            return Response({"detail": "Group not found."}, status=404)
+
+        user = request.user
+
+        if user not in room.participants.all():
+            return Response({"detail": "You are not a member of this group."}, status=403)
+
+        # Creator cannot leave without transferring ownership
+        if room.created_by == user:
+            return Response(
+                {"detail": "You are the group creator. Transfer ownership before leaving."},
+                status=403
+            )
+
+        room.participants.remove(user)
+        return Response({"detail": "You left the group successfully."}, status=200)
+
+
+@extend_schema(
+    tags=["Chat"],
+    summary="Transfer group ownership",
+    description=(
+        "Allows the **group creator** to pass ownership to another participant.\n\n"
+        "Rules:\n"
+        "- Only creator can perform this\n"
+        "- New owner must already be a participant\n"
+    ),
+    request=TransferOwnershipSerializer,
+    responses={
+        200: RoomSerializer,
+        403: OpenApiResponse(description="Not allowed."),
+        404: OpenApiResponse(description="Group not found."),
+    }
+)
+class GroupTransferOwnershipView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, room_id):
+        try:
+            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+        except Room.DoesNotExist:
+            return Response({"detail": "Group not found."}, status=404)
+
+        if room.created_by != request.user:
+            return Response({"detail": "Only the group creator can transfer ownership."}, status=403)
+
+        serializer = TransferOwnershipSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_owner = serializer.validated_data["new_owner_id"]
+
+        if new_owner not in room.participants.all():
+            return Response({"detail": "New owner must be a participant of the group."}, status=403)
+
+        room.created_by = new_owner
+        room.save()
+
+        return Response(RoomSerializer(room).data, status=200)
+
+
+@extend_schema(
+    tags=["Chat"],
+    summary="Delete a group chat",
+    description=(
+        "Deletes a **group chat room**. Only the creator may perform this action.\n"
+        "- Removes all participants\n"
+        "- Deletes room from database\n"
+    ),
+    responses={
+        200: OpenApiResponse(description="Group deleted successfully."),
+        403: OpenApiResponse(description="Only creator can delete group."),
+        404: OpenApiResponse(description="Group not found."),
+    }
+)
+class GroupDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, room_id):
+        try:
+            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+        except Room.DoesNotExist:
+            return Response({"detail": "Group not found."}, status=404)
+
+        if room.created_by != request.user:
+            return Response({"detail": "Only the creator can delete this group."}, status=403)
+
+        room.delete()
+        return Response({"detail": "Group deleted successfully."}, status=200)

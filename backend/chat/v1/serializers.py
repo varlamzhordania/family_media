@@ -238,3 +238,12 @@ class RemoveParticipantsSerializer(serializers.Serializer):
             )
 
         return attrs
+
+class TransferOwnershipSerializer(serializers.Serializer):
+    new_owner_id = serializers.IntegerField()
+
+    def validate_new_owner_id(self, user_id):
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            raise serializers.ValidationError("User does not exist.")
+        return user
