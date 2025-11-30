@@ -11,12 +11,12 @@ app_name = 'v1-chat'
 urlpatterns = [
     path('', MessageView.as_view(), name='message_view'),
     path('groups/', GroupCreateView.as_view(), name='group_create'),
-    path("groups/<int:room_id>/", GroupUpdateView.as_view()),
-    path("groups/<int:room_id>/participants/add/", GroupAddParticipantsView.as_view()),
-    path("groups/<int:room_id>/participants/remove/", GroupRemoveParticipantsView.as_view()),
-    path("groups/<int:room_id>/leave/", GroupLeaveView.as_view()),
-    path("groups/<int:room_id>/transfer-owner/", GroupTransferOwnershipView.as_view()),
-    path("groups/<int:room_id>/delete/", GroupDeleteView.as_view()),
+    path("groups/<int:group_id>/", GroupUpdateView.as_view()),
+    path("groups/<int:group_id>/participants/add/", GroupAddParticipantsView.as_view()),
+    path("groups/<int:group_id>/participants/remove/", GroupRemoveParticipantsView.as_view()),
+    path("groups/<int:group_id>/leave/", GroupLeaveView.as_view()),
+    path("groups/<int:group_id>/transfer-owner/", GroupTransferOwnershipView.as_view()),
+    path("groups/<int:group_id>/delete/", GroupDeleteView.as_view()),
     path(
         'livekit/token/',
         LiveKitTokenView.as_view(),

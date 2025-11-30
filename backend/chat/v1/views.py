@@ -297,9 +297,9 @@ class GroupCreateView(APIView):
 class GroupUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request, room_id):
+    def patch(self, request, group_id):
         try:
-            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+            room = Room.objects.get(id=group_id, type=Room.TypeChoices.GROUP)
         except Room.DoesNotExist:
             return Response({"detail": "Group not found."}, status=404)
 
@@ -337,9 +337,9 @@ class GroupUpdateView(APIView):
 class GroupAddParticipantsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, room_id):
+    def post(self, request, group_id):
         try:
-            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+            room = Room.objects.get(id=group_id, type=Room.TypeChoices.GROUP)
         except Room.DoesNotExist:
             return Response({"detail": "Group not found."}, status=404)
 
@@ -376,9 +376,9 @@ class GroupAddParticipantsView(APIView):
 class GroupRemoveParticipantsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, room_id):
+    def post(self, request, group_id):
         try:
-            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+            room = Room.objects.get(id=group_id, type=Room.TypeChoices.GROUP)
         except Room.DoesNotExist:
             return Response({"detail": "Group not found."}, status=404)
 
@@ -415,9 +415,9 @@ class GroupRemoveParticipantsView(APIView):
 class GroupLeaveView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, room_id):
+    def post(self, request, group_id):
         try:
-            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+            room = Room.objects.get(id=group_id, type=Room.TypeChoices.GROUP)
         except Room.DoesNotExist:
             return Response({"detail": "Group not found."}, status=404)
 
@@ -456,9 +456,9 @@ class GroupLeaveView(APIView):
 class GroupTransferOwnershipView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, room_id):
+    def post(self, request, group_id):
         try:
-            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+            room = Room.objects.get(id=group_id, type=Room.TypeChoices.GROUP)
         except Room.DoesNotExist:
             return Response({"detail": "Group not found."}, status=404)
 
@@ -496,9 +496,9 @@ class GroupTransferOwnershipView(APIView):
 class GroupDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request, room_id):
+    def delete(self, request, group_id):
         try:
-            room = Room.objects.get(id=room_id, type=Room.TypeChoices.GROUP)
+            room = Room.objects.get(id=group_id, type=Room.TypeChoices.GROUP)
         except Room.DoesNotExist:
             return Response({"detail": "Group not found."}, status=404)
 
